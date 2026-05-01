@@ -1,0 +1,236 @@
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { 
+  Plus, 
+  ExternalLink, 
+  Edit3, 
+  Layout, 
+  Share2, 
+  CheckCircle, 
+  Circle,
+  Clock,
+  Settings,
+  Shield
+} from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { ShareButton } from '@/components/dashboard/ShareButton'
+
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: student } = await supabase
+    .from('students')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!student) {
+    // Auto-Recovery: If auth exists but profile doesn't, create it now!
+    const defaultCollegeId = `ID-${Math.floor(Math.random() * 100000)}`
+    
+    await supabase.from('students').insert({
+      college_id: defaultCollegeId,
+      user_id: user.id,
+      name: user.email?.split('@')[0].toUpperCase() || 'NEW STUDENT',
+      email: user.email,
+      role: 'admin', // Make them admin automatically so they can test it
+      subscription_status: 'pro'
+    })
+    
+    // Refresh the page to load the new profile
+    redirect('/dashboard')
+  }
+
+  const portfolioUrl = `/portfolio/${student.college_id}`
+
+  // 3. Calculate Completion Score
+  const sections = [
+    student.summary, 
+    student.profile_pic_url, 
+    student.resume_url, 
+    student.github_url
+  ]
+  const listCounts = [
+    (await supabase.from('experiences').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count,
+    (await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count,
+    (await supabase.from('education').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count
+  ]
+  
+  const filledSections = sections.filter(Boolean).length + listCounts.filter(c => (c || 0) > 0).length
+  const totalSections = sections.length + listCounts.length
+  const completionPercent = Math.round((filledSections / totalSections) * 100)
+
+  return (
+    <div className="flex flex-col gap-12 py-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold font-outfit">Hello, {student.name.split(' ')[0]}! 👋</h1>
+          <p className="text-muted-foreground italic">Managing portfolio for ID: <span className="text-foreground font-mono">{student.college_id}</span></p>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href={portfolioUrl} target="_blank" className="btn-secondary flex items-center gap-2">
+            <ExternalLink size={18} />
+            View Live Site
+          </Link>
+          <Link href="/dashboard/edit" className="btn-primary flex items-center gap-2">
+            <Edit3 size={18} />
+            Edit Portfolio
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats/Status Cards */}
+      <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="card-premium flex flex-col gap-2 p-5 text-left border-l-2 border-primary">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Subscription</span>
+            <Shield size={18} className="text-primary" />
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
+              {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">
+              {student.subscription_expiry ? `Expires: ${new Date(student.subscription_expiry).toLocaleDateString()}` : 'No Expiry'}
+            </div>
+            <Link href="/dashboard/payments" className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest mt-2 block">
+              Manage Billing →
+            </Link>
+          </div>
+        </div>
+
+        <div className="card-premium flex flex-col gap-2 p-5 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Status</span>
+            <Clock className="text-blue-400" />
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-bold font-outfit">{student.is_published ? "Published" : "Draft"}</div>
+            <div className="text-xs text-muted-foreground">{student.is_published ? "Visible to everyone" : "Private view"}</div>
+          </div>
+        </div>
+
+        <div className="card-premium flex flex-col gap-2 p-5 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Template</span>
+            <Layout className="text-purple-400" />
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-bold font-outfit">{student.selected_template.split('-').map((s:string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}</div>
+            <div className="text-xs text-muted-foreground">Modern & Professional</div>
+          </div>
+        </div>
+
+        <div className="card-premium flex flex-col gap-2 p-5 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Views</span>
+            <Share2 className="text-green-400" />
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-bold font-outfit">{student.view_count || 0}</div>
+            <div className="text-xs text-muted-foreground">Total portfolio visits</div>
+          </div>
+        </div>
+
+        <div className="card-premium flex flex-col gap-2 p-5 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Completion</span>
+            <Settings className="text-orange-400" />
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-bold font-outfit">{completionPercent}%</div>
+            <div className="text-xs text-muted-foreground">{completionPercent === 100 ? "Perfect Profile!" : "Keep building..."}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Premium Pro Features */}
+      {student.subscription_status === 'pro' && (
+        <div className="card-premium bg-gradient-to-r from-primary/10 to-transparent border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4 p-6">
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Shield size={20} className="text-primary" />
+              Premium Pro Active
+            </h3>
+            <p className="text-sm text-muted-foreground">You have access to all premium templates, custom colors, and priority support.</p>
+          </div>
+          <a href={`mailto:support@portfolia.com?subject=Priority Support: ID ${student.college_id}`} className="btn-primary text-sm whitespace-nowrap">
+            Priority Support
+          </a>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="card-premium flex flex-col gap-6">
+          <h2 className="text-2xl font-bold font-outfit flex items-center gap-2">
+            <Edit3 className="text-primary" size={24} />
+            Quick Editor
+          </h2>
+          <div className="grid grid-cols-1 gap-3">
+            <EditorLink href="/dashboard/edit#personal" label="Personal Information" completed={true} />
+            <EditorLink href="/dashboard/edit#summary" label="Professional Summary" completed={true} />
+            <EditorLink href="/dashboard/edit#experience" label="Work Experience" completed={false} />
+            <EditorLink href="/dashboard/edit#projects" label="Project Gallery" completed={false} />
+            <EditorLink href="/dashboard/edit#education" label="Educational Background" completed={true} />
+          </div>
+        </div>
+
+        <div className="card-premium flex flex-col gap-6">
+          <h2 className="text-2xl font-bold font-outfit flex items-center gap-2">
+            <Layout className="text-primary" size={24} />
+            Portfolio Preview
+          </h2>
+          <div className="relative aspect-video rounded-xl bg-muted overflow-hidden group">
+             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
+             <div className="absolute bottom-4 left-4 z-20">
+                <p className="font-bold text-lg">{student.selected_template.toUpperCase()}</p>
+                <Link href="/dashboard/templates" className="text-sm text-primary hover:underline">Change template →</Link>
+             </div>
+             {/* Template Preview Placeholder */}
+             <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                <Layout size={48} className="text-primary/20" />
+             </div>
+          </div>
+          <div className="bg-secondary p-4 rounded-xl text-sm border border-border">
+            <p className="text-muted-foreground mb-3 text-xs uppercase tracking-widest font-bold">Quick Share</p>
+            <ShareButton collegeId={student.college_id} />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  )
+}
+
+function StatusCard({ icon, label, value, subValue }: { icon: React.ReactNode, label: string, value: string, subValue: string }) {
+  return (
+    <div className="card-premium flex flex-col gap-2 p-5 text-left">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{label}</span>
+        {icon}
+      </div>
+      <div className="mt-2">
+        <div className="text-2xl font-bold font-outfit">{value}</div>
+        <div className="text-xs text-muted-foreground">{subValue}</div>
+      </div>
+    </div>
+  )
+}
+
+function EditorLink({ href, label, completed }: { href: string, label: string, completed: boolean }) {
+  return (
+    <Link href={href} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 border border-border hover:bg-secondary transition-colors group">
+      <span className="text-sm font-medium">{label}</span>
+      {completed ? (
+        <CheckCircle className="text-green-500" size={16} />
+      ) : (
+        <Plus className="text-muted-foreground group-hover:text-primary transition-colors" size={16} />
+      )}
+    </Link>
+  )
+}
