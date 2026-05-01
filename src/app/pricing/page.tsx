@@ -2,8 +2,19 @@
 
 import { Check, X, Zap, Crown, ShieldCheck, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
 
 export default function PricingPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setIsLoggedIn(true)
+    })
+  }, [])
+
   return (
     <div className="flex flex-col gap-24 py-12 items-center">
       <div className="text-center space-y-4 max-w-2xl">
@@ -36,8 +47,8 @@ export default function PricingPage() {
             <PricingItem active={false} text="Priority Support" />
           </div>
 
-          <Link href="/signup" className="btn-secondary w-full text-center flex items-center justify-center gap-2 group-hover:bg-white/5">
-            Get Started Free <ArrowRight size={18} />
+          <Link href={isLoggedIn ? "/dashboard" : "/signup"} className="btn-secondary w-full text-center flex items-center justify-center gap-2 group-hover:bg-white/5">
+            {isLoggedIn ? "Go to Dashboard" : "Get Started Free"} <ArrowRight size={18} />
           </Link>
         </div>
 
@@ -67,8 +78,8 @@ export default function PricingPage() {
             <PricingItem active={true} text="Priority Email Support" />
           </div>
 
-          <Link href="/signup" className="btn-primary w-full text-center flex items-center justify-center gap-2 animate-pulse-glow">
-            Unlock Premium <Zap size={18} />
+          <Link href={isLoggedIn ? "/dashboard/payments/upgrade" : "/signup"} className="btn-primary w-full text-center flex items-center justify-center gap-2 animate-pulse-glow">
+            {isLoggedIn ? "Upgrade Now" : "Unlock Premium"} <Zap size={18} />
           </Link>
           
           <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase font-bold tracking-[0.2em] italic opacity-60">
