@@ -1,4 +1,5 @@
 import { Code, Link2, Mail, ExternalLink, FileText, ChevronRight, Sparkles, ArrowRight } from 'lucide-react'
+import { normalizeUrl } from '@/lib/utils'
 
 export default function GradientBold({ student, experiences, projects, education, skills }: any) {
   return (
@@ -43,8 +44,8 @@ export default function GradientBold({ student, experiences, projects, education
                 {student.role_title}
              </p>
              <div className="flex gap-3">
-                 {student.github_url && <IconButton href={student.github_url} icon={<Code size={18}/>}/>}
-                 {student.linkedin_url && <IconButton href={student.linkedin_url} icon={<Link2 size={18}/>}/>}
+                 {student.github_url && <IconButton href={normalizeUrl(student.github_url, 'github')} icon={<Code size={18}/>}/>}
+                 {student.linkedin_url && <IconButton href={normalizeUrl(student.linkedin_url, 'linkedin')} icon={<Link2 size={18}/>}/>}
                 {student.email && <IconButton href={`mailto:${student.email}`} icon={<Mail size={18}/>}/>}
              </div>
           </div>

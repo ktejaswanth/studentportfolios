@@ -1,4 +1,5 @@
 import { Code, Link2, ExternalLink, FileText, Briefcase, GraduationCap, Wrench, ChevronRight, ArrowUpRight } from 'lucide-react'
+import { normalizeUrl } from '@/lib/utils'
 
 export default function ProfessionalWhite({ student, experiences, projects, education, skills }: any) {
   return (
@@ -34,10 +35,10 @@ export default function ProfessionalWhite({ student, experiences, projects, educ
                 <a href={`mailto:${student.email}`} className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-4 py-2 border border-zinc-200 rounded-lg hover:border-black">{student.email}</a>
               )}
               {student.linkedin_url && (
-                <a href={student.linkedin_url} target="_blank" className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-4 py-2 border border-zinc-200 rounded-lg hover:border-black">LinkedIn</a>
+                <a href={normalizeUrl(student.linkedin_url, 'linkedin')} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-4 py-2 border border-zinc-200 rounded-lg hover:border-black">LinkedIn</a>
               )}
               {student.github_url && (
-                <a href={student.github_url} target="_blank" className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-4 py-2 border border-zinc-200 rounded-lg hover:border-black">GitHub</a>
+                <a href={normalizeUrl(student.github_url, 'github')} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-4 py-2 border border-zinc-200 rounded-lg hover:border-black">GitHub</a>
               )}
               {student.resume_url && (
                 <a href={student.resume_url} target="_blank" className="text-xs font-bold uppercase tracking-widest text-white bg-black hover:bg-zinc-800 transition-colors px-4 py-2 rounded-lg flex items-center gap-2 active:scale-95">

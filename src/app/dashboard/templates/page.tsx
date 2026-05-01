@@ -96,7 +96,7 @@ export default function TemplatePicker() {
     if (error) {
        toast.error('Failed to update template')
     } else {
-       toast.success(`${id.replace('-', ' ')} template selected!`)
+       toast.success(`${tpl.id.replace('-', ' ')} template selected!`)
     }
     setSaving(false)
   }

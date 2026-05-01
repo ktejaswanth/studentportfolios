@@ -1,4 +1,5 @@
 import { Code, Link2, Mail, ExternalLink, Download, Phone, MapPin, ArrowDown } from 'lucide-react'
+import { normalizeUrl } from '@/lib/utils'
 
 type PortfolioProps = {
   student: any;
@@ -59,12 +60,12 @@ export default function ModernDark({ student, experiences, projects, education, 
           
           <div className="flex items-center gap-4 pt-4">
             {student.github_url && (
-              <a href={student.github_url} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+              <a href={normalizeUrl(student.github_url, 'github')} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                 <Code size={20} />
               </a>
             )}
             {student.linkedin_url && (
-              <a href={student.linkedin_url} className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+              <a href={normalizeUrl(student.linkedin_url, 'linkedin')} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                 <Link2 size={20} />
               </a>
             )}

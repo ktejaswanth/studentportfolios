@@ -1,4 +1,5 @@
 import { Code, Link2, Mail, ExternalLink, FileText, ArrowUpRight } from 'lucide-react'
+import { normalizeUrl } from '@/lib/utils'
 
 export default function MinimalClean({ student, experiences, projects, education, skills }: any) {
   return (
@@ -29,8 +30,8 @@ export default function MinimalClean({ student, experiences, projects, education
           </div>
           
           <div className="flex gap-3 items-center flex-wrap">
-            {student.github_url && <SocialPill href={student.github_url} label="GitHub" />}
-            {student.linkedin_url && <SocialPill href={student.linkedin_url} label="LinkedIn" />}
+            {student.github_url && <SocialPill href={normalizeUrl(student.github_url, 'github')} label="GitHub" />}
+            {student.linkedin_url && <SocialPill href={normalizeUrl(student.linkedin_url, 'linkedin')} label="LinkedIn" />}
             {student.email && <SocialPill href={`mailto:${student.email}`} label="Email" />}
             {student.resume_url && (
               <a href={student.resume_url} target="_blank" className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-zinc-900 px-5 py-2 rounded-full hover:bg-zinc-700 transition-colors shadow-md shadow-zinc-900/10">

@@ -26,7 +26,7 @@ export default function LightCreative({ student, experiences, projects, educatio
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-20 space-y-32">
-        
+
         {/* Hero Section */}
         <header id="about" className="pt-20 relative animate-fade-in">
           <div className="space-y-8">
@@ -47,7 +47,7 @@ export default function LightCreative({ student, experiences, projects, educatio
             <p className="text-lg text-slate-500 max-w-2xl leading-relaxed">
               {student.summary}
             </p>
-            
+
             <div className="flex gap-3 flex-wrap">
               {student.github_url && <SocialLink href={student.github_url} label="GitHub" />}
               {student.linkedin_url && <SocialLink href={student.linkedin_url} label="LinkedIn" />}
@@ -112,42 +112,42 @@ export default function LightCreative({ student, experiences, projects, educatio
           <section className="space-y-8">
             <SectionTitle title="Education" />
             <div className="space-y-6">
-               {education.map((edu: any, i: number) => (
-                 <div key={i} className="relative pl-6 border-l-2 border-primary/20 hover:border-primary transition-colors duration-300 group">
-                    <div className="absolute w-3 h-3 bg-white border-2 border-primary rounded-full -left-[7.5px] top-1.5 group-hover:bg-primary transition-colors duration-300"></div>
-                    <h3 className="text-lg font-bold text-slate-900">{edu.degree}</h3>
-                    <p className="text-slate-500 font-medium">{edu.college}</p>
-                    <div className="mt-2 flex items-center gap-3 text-sm text-slate-400">
-                      <span>{edu.year}</span>
-                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                      <span>CGPA: {edu.cgpa}</span>
-                    </div>
-                 </div>
-               ))}
+              {education.map((edu: any, i: number) => (
+                <div key={i} className="relative pl-6 border-l-2 border-primary/20 hover:border-primary transition-colors duration-300 group">
+                  <div className="absolute w-3 h-3 bg-white border-2 border-primary rounded-full -left-[7.5px] top-1.5 group-hover:bg-primary transition-colors duration-300"></div>
+                  <h3 className="text-lg font-bold text-slate-900">{edu.degree}</h3>
+                  <p className="text-slate-500 font-medium">{edu.college}</p>
+                  <div className="mt-2 flex items-center gap-3 text-sm text-slate-400">
+                    <span>{edu.year}</span>
+                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span>CGPA: {edu.cgpa}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
           <section className="space-y-8">
             <SectionTitle title="Technical Arsenal" />
             <div className="flex flex-wrap gap-3">
-               {skills.map((skill: any, i: number) => (
-                 <div key={i} className="group flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-100 font-semibold text-slate-600 hover:border-primary/30 hover:text-primary hover:shadow-md hover:shadow-primary/5 transition-all duration-300">
-                    <Palette size={12} className="text-primary/40 group-hover:text-primary transition-colors" />
-                    {skill.name}
-                 </div>
-               ))}
+              {skills.map((skill: any, i: number) => (
+                <div key={i} className="group flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-100 font-semibold text-slate-600 hover:border-primary/30 hover:text-primary hover:shadow-md hover:shadow-primary/5 transition-all duration-300">
+                  <Palette size={12} className="text-primary/40 group-hover:text-primary transition-colors" />
+                  {skill.name}
+                </div>
+              ))}
             </div>
           </section>
         </div>
 
         {/* Footer */}
         <footer className="pt-12 pb-6 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-           <p>© {new Date().getFullYear()} {student.name}. All rights reserved.</p>
-           {(!student.subscription_status || student.subscription_status === 'free') && (
-             <p className="flex items-center gap-1 font-medium bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100">
-               Designed with <span className="text-primary font-bold">Portfolia</span>
-             </p>
-           )}
+          <p>© {new Date().getFullYear()} {student.name}. All rights reserved.</p>
+          {(!student.subscription_status || student.subscription_status === 'free') && (
+            <p className="flex items-center gap-1 font-medium bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100">
+              Designed with <span className="text-primary font-bold">Portfolia</span>
+            </p>
+          )}
         </footer>
       </div>
     </div>
@@ -165,9 +165,9 @@ function SectionTitle({ title }: { title: string }) {
 
 function SocialLink({ href, label }: { href: string, label: string }) {
   return (
-    <a 
-      href={href} 
-      target="_blank" 
+    <a
+      href={href}
+      target="_blank"
       className="px-6 py-2.5 rounded-xl bg-white border border-slate-100 text-slate-600 font-semibold hover:border-primary/30 hover:text-primary transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-primary/5 text-sm active:scale-95"
     >
       {label}
