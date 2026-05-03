@@ -108,14 +108,26 @@ export default async function DashboardPage() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Subscription</span>
             <Shield size={18} className={isExpired ? 'text-red-500' : 'text-primary'} />
           </div>
-          <div className="mt-2">
-            <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
-              {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
+          <div className="mt-2 space-y-2">
+            <div>
+              <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
+                {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
+              </div>
+              <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {isExpired ? 'Subscription Expired' : daysRemaining !== null ? `${daysRemaining} Days Left` : 'Unlimited Access'}
+              </div>
             </div>
-            <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-500' : 'text-muted-foreground'}`}>
-              {isExpired ? 'Subscription Expired' : daysRemaining !== null ? `${daysRemaining} Days Left` : 'Unlimited Access'}
+
+            <div className="pt-2 border-t border-white/5 space-y-1">
+               <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
+                  Started: {student.subscription_activated_at ? new Date(student.subscription_activated_at).toLocaleDateString() : 'N/A'}
+               </p>
+               <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
+                  Expires: {student.subscription_expiry ? new Date(student.subscription_expiry).toLocaleDateString() : 'N/A'}
+               </p>
             </div>
-            <Link href="/dashboard/payments" className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest mt-2 block">
+
+            <Link href="/dashboard/payments" className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest mt-2 block pt-1">
               {isExpired ? 'Renew Now →' : 'Manage Billing →'}
             </Link>
           </div>
