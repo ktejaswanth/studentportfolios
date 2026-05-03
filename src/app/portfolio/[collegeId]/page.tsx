@@ -7,6 +7,25 @@ import LightCreative from '@/components/templates/LightCreative'
 import ProfessionalWhite from '@/components/templates/ProfessionalWhite'
 import { PasswordLock } from '@/components/portfolio/PasswordLock'
 import { PrintButton } from '@/components/portfolio/PrintButton'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ collegeId: string }> }): Promise<Metadata> {
+  const supabase = await createClient()
+  const { collegeId } = await params
+  const { data: student } = await supabase.from('students').select('name, role_title, summary').eq('college_id', collegeId).maybeSingle()
+  
+  if (!student) return { title: 'Portfolio Not Found' }
+
+  return {
+    title: `${student.name} | ${student.role_title} Portfolio`,
+    description: student.summary || `Professional portfolio of ${student.name}`,
+    openGraph: {
+      title: `${student.name}'s Professional Portfolio`,
+      description: student.summary,
+      type: 'website'
+    }
+  }
+}
 
 export default async function PublicPortfolio({ params }: { params: Promise<{ collegeId: string }> }) {
   const supabase = await createClient()
@@ -23,7 +42,7 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
   // 2. Fetch student
   const { data: student } = await supabase
     .from('students')
-    .select('*')
+    .select('*, experiences(*), projects(*), education(*), skills(*)')
     .eq('college_id', collegeId)
     .maybeSingle()
 

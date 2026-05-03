@@ -185,10 +185,17 @@ export default function EditPortfolio() {
        toast.error('Please enter a Headline / Role Type first'); return;
     }
     setAiLoading(true)
+    const existingContent = type === 'summary' ? personal.summary : (index !== undefined ? projects[index].description : '');
+    const isRefining = existingContent && existingContent.length > 20;
+
     try {
        const prompt = type === 'summary' 
-         ? `I am a ${personal.role_title}. I have skills in ${skills.map(s => s.name).join(', ')}. Generate a short professional bio.`
-         : `I am a ${personal.role_title}. This project is called ${index !== undefined ? projects[index].title : ''} using ${index !== undefined ? projects[index].tech : ''}. Describe it.`;
+         ? (isRefining 
+             ? `I am a ${personal.role_title}. Improve and professionally polish this bio: "${existingContent}"` 
+             : `I am a ${personal.role_title}. I have skills in ${skills.map(s => s.name).join(', ')}. Generate a short professional bio.`)
+         : (isRefining
+             ? `Improve this project description for ${projects[index!].title}: "${existingContent}"`
+             : `I am a ${personal.role_title}. This project is called ${index !== undefined ? projects[index].title : ''} using ${index !== undefined ? projects[index].tech : ''}. Describe it.`);
          
        const res = await fetch('/api/ai/generate', {
          method: 'POST',
@@ -206,7 +213,7 @@ export default function EditPortfolio() {
           newProj[index].description = data.text;
           setProjects(newProj);
        }
-       toast.success('AI generation successful!')
+       toast.success(isRefining ? 'Content refined with AI!' : 'AI generation successful!')
     } catch (err) {
        toast.error('AI Generation failed')
     }
@@ -366,7 +373,7 @@ export default function EditPortfolio() {
                className="btn-secondary flex items-center gap-2 py-1 px-3 text-xs"
             >
                {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <span>🪄</span>}
-               AI Auto-Write
+               {personal.summary && personal.summary.length > 20 ? 'Refine with AI' : 'AI Auto-Write'}
             </button>
          </div>
          <div className="card-premium">
@@ -470,7 +477,7 @@ export default function EditPortfolio() {
                            className="btn-secondary flex items-center gap-2 py-0.5 px-2 text-[10px]"
                          >
                            {aiLoading ? <Loader2 size={10} className="animate-spin" /> : <span>🪄</span>}
-                           AI Generate
+                           {proj.description && proj.description.length > 20 ? 'Refine with AI' : 'AI Generate'}
                          </button>
                        </div>
                        <textarea placeholder="Brief description..." className="input-field min-h-[80px] resize-none" value={proj.description} onChange={(e) => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} />

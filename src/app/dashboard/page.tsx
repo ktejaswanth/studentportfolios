@@ -27,7 +27,12 @@ export default async function DashboardPage() {
 
   const { data: student } = await supabase
     .from('students')
-    .select('*')
+    .select(`
+      *,
+      experiences(count),
+      projects(count),
+      education(count)
+    `)
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -63,23 +68,23 @@ export default async function DashboardPage() {
     student.github_url
   ]
   const listCounts = [
-    (await supabase.from('experiences').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count,
-    (await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count,
-    (await supabase.from('education').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count
+    student.experiences?.[0]?.count || 0,
+    student.projects?.[0]?.count || 0,
+    student.education?.[0]?.count || 0
   ]
-
-  const filledSections = sections.filter(Boolean).length + listCounts.filter(c => (c || 0) > 0).length
+  
+  const filledSections = sections.filter(Boolean).length + listCounts.filter(c => c > 0).length
   const totalSections = sections.length + listCounts.length
   const completionPercent = Math.round((filledSections / totalSections) * 100)
-
+  
   const missingSuggestions = []
   if (!student.summary) missingSuggestions.push('Add Summary')
   if (!student.profile_pic_url) missingSuggestions.push('Add Photo')
-  if (!student.resume_url) missingSuggestions.push('Upload Resume')
+  if (!student.resume_url) missingSuggestions.push('Add Resume')
   if (!student.github_url) missingSuggestions.push('Add GitHub')
-  if ((listCounts[0] || 0) === 0) missingSuggestions.push('Add Experience')
-  if ((listCounts[1] || 0) === 0) missingSuggestions.push('Add Projects')
-  if ((listCounts[2] || 0) === 0) missingSuggestions.push('Add Education')
+  if (listCounts[0] === 0) missingSuggestions.push('Add Experience')
+  if (listCounts[1] === 0) missingSuggestions.push('Add Projects')
+  if (listCounts[2] === 0) missingSuggestions.push('Add Education')
 
   // 4. Calculate Days Remaining
   const now = new Date()
