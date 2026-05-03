@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { createClient } from '@/lib/supabase/server';
-import pdf from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,8 +27,10 @@ export async function POST(req: Request) {
         console.log('Fetching resume for AI analysis:', resume_url);
         const res = await fetch(resume_url);
         const buffer = Buffer.from(await res.arrayBuffer());
-        const data = await pdf(buffer);
+        const parser = new PDFParse({ data: buffer });
+        const data = await parser.getText();
         resumeText = data.text;
+        await parser.destroy();
         console.log('Successfully parsed resume text length:', resumeText.length);
       } catch (err) {
         console.error('Resume parsing failed:', err);
