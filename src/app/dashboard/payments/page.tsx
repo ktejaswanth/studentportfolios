@@ -92,11 +92,13 @@ export default function PaymentsPage() {
                 {isPremium ? 'Premium Pro' : 'Free Plan'}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {isPremium && !isExpired
+                {isPremium && student.subscription_expiry && !isExpired
                   ? `Valid until ${new Date(student.subscription_expiry).toLocaleDateString()}` 
                   : isExpired 
                     ? <span className="text-red-500 font-bold">Subscription Expired</span>
-                    : 'Basic features enabled'}
+                    : isPremium && !student.subscription_expiry
+                      ? 'Unlimited Access'
+                      : 'Basic features enabled'}
               </p>
             </div>
           </div>
