@@ -82,15 +82,22 @@ export default async function DashboardPage() {
           <h1 className="text-4xl font-bold font-outfit">Hello, {student.name.split(' ')[0]}! 👋</h1>
           <p className="text-muted-foreground italic">Managing portfolio for ID: <span className="text-foreground font-mono">{student.college_id}</span></p>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href={portfolioUrl} target="_blank" className="btn-secondary flex items-center gap-2">
-            <ExternalLink size={18} />
-            View Live Site
-          </Link>
-          <Link href="/dashboard/edit" className="btn-primary flex items-center gap-2">
-            <Edit3 size={18} />
-            Edit Portfolio
-          </Link>
+        <div className="flex flex-col items-end gap-2">
+          {daysRemaining !== null && (
+            <div className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+              {isExpired ? 'Timeline Over' : `${daysRemaining} Days to Portfolio Live`}
+            </div>
+          )}
+          <div className="flex items-center gap-4">
+            <Link href={portfolioUrl} target="_blank" className="btn-secondary flex items-center gap-2">
+              <ExternalLink size={18} />
+              View Live Site
+            </Link>
+            <Link href="/dashboard/edit" className="btn-primary flex items-center gap-2">
+              <Edit3 size={18} />
+              Edit Portfolio
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -159,7 +166,33 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Premium Pro Features */}
+      {/* Premium Pro Upgrade Banner (Only for Free Users) */}
+      {student.subscription_status === 'free' && (
+        <div className="card-premium bg-gradient-to-r from-primary/20 via-primary/5 to-transparent border-primary/30 flex flex-col md:flex-row items-center justify-between gap-6 p-8 relative overflow-hidden group shadow-2xl shadow-primary/5">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Crown size={120} />
+          </div>
+          <div className="space-y-3 relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest border border-primary/20">
+              <Sparkles size={12} /> Limited Free Plan
+            </div>
+            <h3 className="text-2xl font-bold font-outfit">Unlock the Full Power of Portfolia</h3>
+            <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
+              Upgrade to <span className="text-primary font-bold">Premium Pro</span> to unlock all templates, custom branding, priority support, and extend your portfolio validity to 120 days.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+            <Link href="/pricing" className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+              Compare Plans
+            </Link>
+            <Link href="/dashboard/payments/upgrade" className="btn-primary px-8 py-3 shadow-xl shadow-primary/20 flex items-center gap-2 group-hover:scale-105 transition-all">
+              Upgrade for ₹10 <Zap size={18} />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Pro Features (For Pro Users) */}
       {student.subscription_status === 'pro' && (
         <div className="card-premium bg-gradient-to-r from-primary/10 to-transparent border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4 p-6">
           <div className="space-y-1">

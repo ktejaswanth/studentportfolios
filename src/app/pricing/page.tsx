@@ -46,7 +46,8 @@ const comparisonData = [
   { feature: 'Custom URL', free: false, premium: true },
   { feature: 'ATS Resume', free: false, premium: true },
   { feature: 'Priority Support', free: false, premium: true },
-  { feature: 'Price', free: '₹0', premium: '₹10/year 🔥' },
+  { feature: 'Price', free: '₹0', premium: '₹10 🔥' },
+  { feature: 'Validity', free: '30 Days', premium: '120 Days' },
 ]
 
 const faqs = [
@@ -115,7 +116,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-5xl font-bold font-outfit">₹0</span>
-              <span className="text-muted-foreground">/forever</span>
+              <span className="text-muted-foreground">/30 days</span>
             </div>
             <p className="text-sm text-muted-foreground italic">Perfect for beginners — portfolio create cheskovadaniki enough 👌</p>
           </div>
@@ -177,7 +178,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-5xl font-bold font-outfit">₹10</span>
-              <span className="text-muted-foreground">/year</span>
+              <span className="text-muted-foreground">/120 days</span>
             </div>
             <p className="text-sm text-muted-foreground italic">Full power unlock — professionally standout avvu 🔥</p>
           </div>

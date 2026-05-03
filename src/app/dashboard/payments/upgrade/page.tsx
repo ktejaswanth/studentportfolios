@@ -145,12 +145,19 @@ export default function UpgradePage() {
                   </button>
                 </div>
                 
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Amount</p>
-                    <p className="text-xl font-bold text-primary">₹{PAYMENT_AMOUNT}.00</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Amount</p>
+                      <p className="text-xl font-bold text-primary">₹{PAYMENT_AMOUNT}</p>
+                    </div>
                   </div>
-                  <CheckCircle2 size={24} className="text-primary opacity-20" />
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Validity</p>
+                      <p className="text-xl font-bold text-primary">120 Days</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
