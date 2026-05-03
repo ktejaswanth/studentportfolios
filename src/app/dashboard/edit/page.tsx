@@ -213,38 +213,47 @@ export default function EditPortfolio() {
   )
 
 
-  const generateWithAI = async (type: 'summary' | 'project', index?: number) => {
+  const generateWithAI = async (type: 'summary' | 'project' | 'achievements', index?: number) => {
     if (!personal.role_title) {
        toast.error('Please enter a Headline / Role Type first'); return;
     }
     setAiLoading(true)
-    const existingContent = type === 'summary' ? personal.summary : (index !== undefined ? projects[index].description : '');
+    const existingContent = type === 'summary' ? personal.summary : (type === 'project' && index !== undefined ? projects[index].description : (type === 'achievements' ? personal.achievements : ''));
     const isRefining = existingContent && existingContent.length > 20;
 
     try {
-       const prompt = type === 'summary' 
-         ? (isRefining 
-             ? `I am a ${personal.role_title}. Improve and professionally polish this bio: "${existingContent}"` 
-             : `I am a ${personal.role_title}. I have skills in ${skills.map(s => s.name).join(', ')}. Generate a short professional bio.`)
-         : (isRefining
-             ? `Improve this project description for ${projects[index!].title}: "${existingContent}"`
-             : `I am a ${personal.role_title}. This project is called ${index !== undefined ? projects[index].title : ''} using ${index !== undefined ? projects[index].tech : ''}. Describe it.`);
-         
+       let prompt = "";
+       if (type === 'summary') {
+          prompt = isRefining 
+            ? `I am a ${personal.role_title}. Improve and professionally polish this bio: "${existingContent}"` 
+            : `I am a ${personal.role_title}. I have skills in ${skills.map(s => s.name).join(', ')}. Generate a short professional bio.`;
+       } else if (type === 'project' && index !== undefined) {
+          prompt = isRefining
+            ? `Improve this project description for ${projects[index].title}: "${existingContent}"`
+            : `I am a ${personal.role_title}. This project is called ${projects[index].title} using ${projects[index].tech}. Describe it professionally.`;
+       } else if (type === 'achievements') {
+          prompt = isRefining
+            ? `Improve and professionally polish these achievements: "${existingContent}"`
+            : `I am a ${personal.role_title}. Generate a list of professional achievements or honors based on my background.`;
+       }
+          
        const res = await fetch('/api/ai/generate', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ type, prompt })
+         body: JSON.stringify({ type, prompt, resume_url: personal.resume_url })
        });
        const data = await res.json();
        
        if (data.error) throw new Error(data.error);
        
        if (type === 'summary') {
-          setPersonal({...personal, summary: data.text})
+          setPersonal(prev => ({...prev, summary: data.text}))
        } else if (type === 'project' && index !== undefined) {
           const newProj = [...projects];
           newProj[index].description = data.text;
           setProjects(newProj);
+       } else if (type === 'achievements') {
+          setPersonal(prev => ({...prev, achievements: data.text}))
        }
        toast.success(isRefining ? 'Content refined with AI!' : 'AI generation successful!')
     } catch (err) {
@@ -682,9 +691,19 @@ export default function EditPortfolio() {
          <SectionTitle icon={<Star size={24} />} title="Achievements, Hobbies & Interests" />
          <div className="grid md:grid-cols-1 gap-6 card-premium">
             <div className="space-y-2">
-               <label className="text-sm font-medium flex items-center gap-2">
-                  <Trophy size={16} className="text-primary" /> Key Achievements
-               </label>
+               <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                     <Trophy size={16} className="text-primary" /> Key Achievements
+                  </label>
+                  <button 
+                     onClick={() => generateWithAI('achievements')} 
+                     disabled={aiLoading}
+                     className="btn-secondary flex items-center gap-2 py-0.5 px-2 text-[10px]"
+                  >
+                     {aiLoading ? <Loader2 size={10} className="animate-spin" /> : <span>🪄</span>}
+                     {personal.achievements && personal.achievements.length > 20 ? 'Refine with AI' : 'AI Generate'}
+                  </button>
+               </div>
                <textarea 
                  className="input-field min-h-[80px] resize-none" 
                  placeholder="Honors, awards, competition wins..."
