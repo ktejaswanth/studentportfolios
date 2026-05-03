@@ -110,8 +110,13 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-2 space-y-2">
             <div>
-              <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
-                {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
+                  {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
+                </div>
+                <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-black uppercase tracking-tighter border border-primary/20">
+                  {student.subscription_status === 'pro' ? '120D' : '30D'}
+                </span>
               </div>
               <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-500' : 'text-muted-foreground'}`}>
                 {isExpired ? 'Subscription Expired' : daysRemaining !== null ? `${daysRemaining} Days Left` : 'Unlimited Access'}

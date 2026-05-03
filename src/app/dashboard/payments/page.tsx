@@ -100,6 +100,9 @@ export default function PaymentsPage() {
                       ? 'Unlimited Access'
                       : 'Basic features enabled'}
               </p>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-2">
+                 Plan Duration: {isPremium ? '120 Days' : '30 Days'}
+              </p>
             </div>
           </div>
           
