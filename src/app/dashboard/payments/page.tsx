@@ -59,6 +59,7 @@ export default function PaymentsPage() {
   )
 
   const isPremium = student?.subscription_status === 'pro'
+  const isExpired = student?.subscription_expiry && new Date(student.subscription_expiry) < new Date()
   const hasPendingPayment = payments.some(p => p.status === 'pending')
 
   return (
@@ -91,19 +92,27 @@ export default function PaymentsPage() {
                 {isPremium ? 'Premium Pro' : 'Free Plan'}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {isPremium 
+                {isPremium && !isExpired
                   ? `Valid until ${new Date(student.subscription_expiry).toLocaleDateString()}` 
-                  : 'Basic features enabled'}
+                  : isExpired 
+                    ? <span className="text-red-500 font-bold">Subscription Expired</span>
+                    : 'Basic features enabled'}
               </p>
             </div>
           </div>
           
+          {(isExpired || (!isPremium && !hasPendingPayment)) && (
+             <Link href="/dashboard/payments/upgrade" className="btn-primary w-full text-center flex items-center justify-center gap-2">
+                {isExpired ? 'Renew Subscription' : 'Upgrade to Pro'} <ArrowRight size={18} />
+             </Link>
+          )}
+          
           <div className="space-y-3 pt-4">
-            <FeatureItem active={true} label="Public Portfolio URL" />
+            <FeatureItem active={!isExpired} label="Public Portfolio URL" />
             <FeatureItem active={true} label="Standard Templates" />
-            <FeatureItem active={isPremium} label="Premium Templates" />
-            <FeatureItem active={isPremium} label="Advanced Analytics" />
-            <FeatureItem active={isPremium} label="Priority Support" />
+            <FeatureItem active={isPremium && !isExpired} label="Premium Templates" />
+            <FeatureItem active={isPremium && !isExpired} label="Advanced Analytics" />
+            <FeatureItem active={isPremium && !isExpired} label="Priority Support" />
           </div>
         </div>
 
