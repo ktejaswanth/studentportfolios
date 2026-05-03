@@ -91,13 +91,32 @@ export default function PaymentsPage() {
               <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
                 {isPremium ? 'Premium Pro' : 'Free Plan'}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                {student.subscription_expiry && !isExpired
-                  ? `Valid until ${new Date(student.subscription_expiry).toLocaleDateString()}` 
-                  : isExpired 
-                    ? <span className="text-red-500 font-bold">Subscription Expired</span>
-                    : 'Basic features enabled'}
+              <p className="text-sm font-medium mt-1">
+                {student.subscription_expiry ? (
+                  isExpired ? (
+                    <span className="text-red-500 font-bold uppercase tracking-tighter">Subscription Expired</span>
+                  ) : (
+                    <span className="text-green-400 font-bold">
+                       Expires: {new Date(student.subscription_expiry).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  )
+                ) : (
+                  <span className="text-muted-foreground italic">Basic features enabled</span>
+                )}
               </p>
+              {isPremium && !isExpired && student.subscription_expiry && (
+                 <div className="mt-3 space-y-2">
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                       {Math.ceil((new Date(student.subscription_expiry).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} Days Remaining
+                    </div>
+                    <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
+                       <div 
+                         className="h-full bg-primary" 
+                         style={{ width: `${Math.max(5, Math.min(100, ( (Math.ceil((new Date(student.subscription_expiry).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) / 120 ) * 100))}%` }} 
+                       />
+                    </div>
+                 </div>
+              )}
               <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-2">
                  Plan Duration: {isPremium ? '120 Days' : '30 Days'}
               </p>

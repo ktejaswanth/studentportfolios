@@ -108,6 +108,44 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* Subscription Timeline UI */}
+      {student.subscription_expiry && (
+        <div className="card-premium p-6 border-b-2 border-primary/20">
+           <div className="flex justify-between items-end mb-4">
+              <div className="space-y-1">
+                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Subscription Lifecycle</p>
+                 <h2 className="text-xl font-bold font-outfit">Portfolio Validity</h2>
+              </div>
+              <div className="text-right">
+                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Expires On</p>
+                 <p className="text-sm font-bold text-primary">{new Date(student.subscription_expiry).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              </div>
+           </div>
+           
+           <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`absolute top-0 left-0 h-full transition-all duration-1000 ${isExpired ? 'bg-red-500' : 'bg-gradient-to-r from-primary/50 to-primary'}`}
+                style={{ width: `${isExpired ? 100 : Math.max(2, Math.min(100, ( (120 - (daysRemaining || 0)) / 120 ) * 100))}%` }}
+              />
+           </div>
+           
+           <div className="flex justify-between mt-3 text-[9px] uppercase tracking-tighter font-bold text-muted-foreground">
+              <div className="flex flex-col items-start">
+                 <span>Started</span>
+                 <span className="text-foreground">{student.subscription_activated_at ? new Date(student.subscription_activated_at).toLocaleDateString() : 'N/A'}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                 <span>Current Status</span>
+                 <span className={isExpired ? 'text-red-500' : 'text-green-400'}>{isExpired ? 'EXPIRED' : 'ACTIVE'}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                 <span>Expiry</span>
+                 <span className="text-foreground">{new Date(student.subscription_expiry).toLocaleDateString()}</span>
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
