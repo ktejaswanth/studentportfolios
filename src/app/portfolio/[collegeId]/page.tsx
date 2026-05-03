@@ -27,12 +27,18 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
   if (student.subscription_expiry && new Date(student.subscription_expiry) < new Date()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white font-outfit p-4 text-center">
-         <div className="max-w-md space-y-4">
-            <div className="w-16 h-16 bg-red-500/10 text-red-500 flex items-center justify-center rounded-2xl mx-auto mb-6">
-               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+         <div className="max-w-md space-y-6 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-red-500/10 text-red-500 flex items-center justify-center rounded-3xl mx-auto shadow-2xl shadow-red-500/5 border border-red-500/20">
+               <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
-            <h1 className="text-3xl font-bold">Portfolio Expired</h1>
-            <p className="text-zinc-400">This student's portfolio subscription has expired. If you are the owner, please log in to your dashboard to renew your subscription.</p>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight">Link Expired</h1>
+              <p className="text-zinc-400 text-lg leading-relaxed">This public portfolio link is no longer active. The student's subscription period has ended.</p>
+            </div>
+            <div className="pt-4">
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent mb-8" />
+              <p className="text-sm text-zinc-500 italic">Are you the owner? Renew your plan in the dashboard to go live again.</p>
+            </div>
          </div>
       </div>
     )
@@ -80,11 +86,20 @@ export async function generateMetadata({ params }: { params: Promise<{ collegeId
   const { collegeId } = await params
   const { data: student } = await supabase
     .from('students')
-    .select('name, role_title, summary')
+    .select('name, role_title, summary, subscription_expiry')
     .eq('college_id', collegeId)
     .maybeSingle()
 
   if (!student) return { title: 'Not Found' }
+
+  // Check expiration for metadata too
+  if (student.subscription_expiry && new Date(student.subscription_expiry) < new Date()) {
+    return {
+      title: 'Portfolio Expired | Portfolia',
+      description: 'This professional portfolio link has expired.',
+      robots: { index: false, follow: false }
+    }
+  }
 
   return {
     title: `${student.name} | ${student.role_title}`,

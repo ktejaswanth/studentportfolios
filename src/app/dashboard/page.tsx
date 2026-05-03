@@ -31,13 +31,18 @@ export default async function DashboardPage() {
     // Auto-Recovery: If auth exists but profile doesn't, create it now!
     const defaultCollegeId = `ID-${Math.floor(Math.random() * 100000)}`
     
+    const oneYearExpiry = new Date()
+    oneYearExpiry.setFullYear(oneYearExpiry.getFullYear() + 1)
+    
     await supabase.from('students').insert({
       college_id: defaultCollegeId,
       user_id: user.id,
       name: user.email?.split('@')[0].toUpperCase() || 'NEW STUDENT',
       email: user.email,
       role: 'admin', // Make them admin automatically so they can test it
-      subscription_status: 'pro'
+      subscription_status: 'pro',
+      subscription_activated_at: new Date().toISOString(),
+      subscription_expiry: oneYearExpiry.toISOString()
     })
     
     // Refresh the page to load the new profile
@@ -63,6 +68,12 @@ export default async function DashboardPage() {
   const totalSections = sections.length + listCounts.length
   const completionPercent = Math.round((filledSections / totalSections) * 100)
 
+  // 4. Calculate Days Remaining
+  const now = new Date()
+  const expiry = student.subscription_expiry ? new Date(student.subscription_expiry) : null
+  const daysRemaining = expiry ? Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null
+  const isExpired = daysRemaining !== null && daysRemaining <= 0;
+
   return (
     <div className="flex flex-col gap-12 py-8">
       {/* Header */}
@@ -85,20 +96,20 @@ export default async function DashboardPage() {
 
       {/* Stats/Status Cards */}
       <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-6">
-        <div className="card-premium flex flex-col gap-2 p-5 text-left border-l-2 border-primary">
+        <div className={`card-premium flex flex-col gap-2 p-5 text-left border-l-2 ${isExpired ? 'border-red-500 bg-red-500/5' : 'border-primary'}`}>
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Subscription</span>
-            <Shield size={18} className="text-primary" />
+            <Shield size={18} className={isExpired ? 'text-red-500' : 'text-primary'} />
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold font-outfit uppercase tracking-wider">
               {student.subscription_status === 'pro' ? "Premium Pro" : "Free Plan"}
             </div>
-            <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-1">
-              {student.subscription_expiry ? `Expires: ${new Date(student.subscription_expiry).toLocaleDateString()}` : 'No Expiry'}
+            <div className={`text-[10px] uppercase font-bold tracking-widest mt-1 ${isExpired ? 'text-red-500' : 'text-muted-foreground'}`}>
+              {isExpired ? 'Subscription Expired' : daysRemaining !== null ? `${daysRemaining} Days Left` : 'Unlimited Access'}
             </div>
             <Link href="/dashboard/payments" className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest mt-2 block">
-              Manage Billing →
+              {isExpired ? 'Renew Now →' : 'Manage Billing →'}
             </Link>
           </div>
         </div>

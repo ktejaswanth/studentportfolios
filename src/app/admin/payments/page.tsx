@@ -15,6 +15,7 @@ import {
   MessageSquare
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { triggerApprovalEmail } from '@/app/actions/email'
 
 export default function AdminPayments() {
   const supabase = createClient()
@@ -69,11 +70,17 @@ export default function AdminPayments() {
         .from('students')
         .update({ 
           subscription_status: 'pro',
+          subscription_activated_at: new Date().toISOString(),
           subscription_expiry: expiryDate.toISOString()
         })
         .eq('college_id', payment.college_id)
 
       if (sError) throw sError
+
+      // 3. Send Success Email
+      if (payment.students?.email) {
+        await triggerApprovalEmail(payment.students.email, payment.students.name)
+      }
 
       toast.success('Payment approved and subscription activated!')
       fetchPayments()

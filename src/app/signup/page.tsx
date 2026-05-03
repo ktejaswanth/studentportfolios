@@ -74,6 +74,7 @@ export default function SignupPage() {
           role_title: 'Student', // Default
           selected_template: 'modern-dark', // Default
           is_published: false,
+          subscription_activated_at: new Date().toISOString(),
           subscription_expiry: expiryDate.toISOString()
         })
 

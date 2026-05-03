@@ -16,7 +16,8 @@ CREATE TABLE public.students (
     theme_mode TEXT DEFAULT 'dark', -- 'dark' or 'light'
     is_published BOOLEAN DEFAULT false,
     subscription_status TEXT DEFAULT 'free', -- 'free', 'pro', 'canceled'
-    subscription_expiry TIMESTAMPTZ,
+    subscription_activated_at TIMESTAMPTZ DEFAULT NOW(), -- Timestamp when the current plan started
+    subscription_expiry TIMESTAMPTZ, -- 30 days for free, 120 days for pro
     view_count INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
