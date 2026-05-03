@@ -1,23 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { 
-  Plus, 
-  ExternalLink, 
-  Edit3, 
-  Layout, 
-  Share2, 
-  CheckCircle, 
+import {
+  Plus,
+  ExternalLink,
+  Edit3,
+  Layout,
+  Share2,
+  CheckCircle,
   Circle,
   Clock,
   Settings,
-  Shield
+  Shield,
+  Globe,
+  Crown,
+  Sparkles,
+  Zap
 } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { ShareButton } from '@/components/dashboard/ShareButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -30,10 +34,10 @@ export default async function DashboardPage() {
   if (!student) {
     // Auto-Recovery: If auth exists but profile doesn't, create it now!
     const defaultCollegeId = `ID-${Math.floor(Math.random() * 100000)}`
-    
+
     const oneYearExpiry = new Date()
     oneYearExpiry.setFullYear(oneYearExpiry.getFullYear() + 1)
-    
+
     await supabase.from('students').insert({
       college_id: defaultCollegeId,
       user_id: user.id,
@@ -44,7 +48,7 @@ export default async function DashboardPage() {
       subscription_activated_at: new Date().toISOString(),
       subscription_expiry: oneYearExpiry.toISOString()
     })
-    
+
     // Refresh the page to load the new profile
     redirect('/dashboard')
   }
@@ -53,9 +57,9 @@ export default async function DashboardPage() {
 
   // 3. Calculate Completion Score
   const sections = [
-    student.summary, 
-    student.profile_pic_url, 
-    student.resume_url, 
+    student.summary,
+    student.profile_pic_url,
+    student.resume_url,
     student.github_url
   ]
   const listCounts = [
@@ -63,38 +67,66 @@ export default async function DashboardPage() {
     (await supabase.from('projects').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count,
     (await supabase.from('education').select('*', { count: 'exact', head: true }).eq('college_id', student.college_id)).count
   ]
-  
+
   const filledSections = sections.filter(Boolean).length + listCounts.filter(c => (c || 0) > 0).length
   const totalSections = sections.length + listCounts.length
   const completionPercent = Math.round((filledSections / totalSections) * 100)
+
+  const missingSuggestions = []
+  if (!student.summary) missingSuggestions.push('Add Summary')
+  if (!student.profile_pic_url) missingSuggestions.push('Add Photo')
+  if (!student.resume_url) missingSuggestions.push('Upload Resume')
+  if (!student.github_url) missingSuggestions.push('Add GitHub')
+  if ((listCounts[0] || 0) === 0) missingSuggestions.push('Add Experience')
+  if ((listCounts[1] || 0) === 0) missingSuggestions.push('Add Projects')
+  if ((listCounts[2] || 0) === 0) missingSuggestions.push('Add Education')
 
   // 4. Calculate Days Remaining
   const now = new Date()
   const expiry = student.subscription_expiry ? new Date(student.subscription_expiry) : null
   const daysRemaining = expiry ? Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null
   const isExpired = daysRemaining !== null && daysRemaining <= 0;
+  const isExpiringSoon = daysRemaining !== null && daysRemaining > 0 && daysRemaining <= 5;
 
   return (
     <div className="flex flex-col gap-12 py-8">
+      {isExpiringSoon && (
+        <div className="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl flex items-start gap-3 animate-pulse-glow">
+          <div className="p-2 bg-orange-500/20 rounded-full mt-0.5">
+            <Clock size={16} className="text-orange-400" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-orange-400 font-bold text-sm uppercase tracking-widest">Action Required: Expiring Soon</h3>
+            <p className="text-sm text-muted-foreground">
+              Your portfolio access expires in <span className="font-bold text-orange-400">{daysRemaining} days</span>.
+              Renew your subscription now to avoid any interruption to your live portfolio link.
+            </p>
+          </div>
+          <Link href="/dashboard/payments" className="ml-auto btn-primary py-2 px-4 text-xs whitespace-nowrap">
+            Renew Now
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold font-outfit">Hello, {student.name.split(' ')[0]}! 👋</h1>
           <p className="text-muted-foreground italic">Managing portfolio for ID: <span className="text-foreground font-mono">{student.college_id}</span></p>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col md:items-end gap-4">
           {daysRemaining !== null && (
-            <div className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+            <div className={`text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full border w-fit ${isExpired ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
               {isExpired ? 'Timeline Over' : `${daysRemaining} Days to Portfolio Live`}
             </div>
           )}
-          <div className="flex items-center gap-4">
-            <Link href={portfolioUrl} target="_blank" className="btn-secondary flex items-center gap-2">
-              <ExternalLink size={18} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href={portfolioUrl} target="_blank" className="btn-secondary flex items-center gap-2 text-sm">
+              <ExternalLink size={16} />
               View Live Site
             </Link>
-            <Link href="/dashboard/edit" className="btn-primary flex items-center gap-2">
-              <Edit3 size={18} />
+            <Link href="/dashboard/edit" className="btn-primary flex items-center gap-2 text-sm">
+              <Edit3 size={16} />
               Edit Portfolio
             </Link>
           </div>
@@ -124,12 +156,12 @@ export default async function DashboardPage() {
             </div>
 
             <div className="pt-2 border-t border-white/5 space-y-1">
-               <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
-                  Started: {student.subscription_activated_at ? new Date(student.subscription_activated_at).toLocaleDateString() : 'N/A'}
-               </p>
-               <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
-                  Expires: {student.subscription_expiry ? new Date(student.subscription_expiry).toLocaleDateString() : 'N/A'}
-               </p>
+              <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
+                Started: {student.subscription_activated_at ? new Date(student.subscription_activated_at).toLocaleDateString() : 'N/A'}
+              </p>
+              <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">
+                Expires: {student.subscription_expiry ? new Date(student.subscription_expiry).toLocaleDateString() : 'N/A'}
+              </p>
             </div>
 
             <Link href="/dashboard/payments" className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest mt-2 block pt-1">
@@ -155,7 +187,7 @@ export default async function DashboardPage() {
             <Layout className="text-purple-400" />
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-bold font-outfit">{student.selected_template.split('-').map((s:string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}</div>
+            <div className="text-2xl font-bold font-outfit">{student.selected_template.split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')}</div>
             <div className="text-xs text-muted-foreground">Modern & Professional</div>
           </div>
         </div>
@@ -178,7 +210,17 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold font-outfit">{completionPercent}%</div>
-            <div className="text-xs text-muted-foreground">{completionPercent === 100 ? "Perfect Profile!" : "Keep building..."}</div>
+            {completionPercent === 100 ? (
+              <div className="text-xs text-green-400 font-bold flex items-center gap-1 mt-1"><CheckCircle size={12} /> All set!</div>
+            ) : (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {missingSuggestions.slice(0, 2).map((s, i) => (
+                  <Link key={i} href="/dashboard/edit" className="text-[9px] uppercase font-bold tracking-widest bg-white/5 hover:bg-white/10 px-2 py-1 rounded text-muted-foreground hover:text-primary transition-colors border border-white/5">
+                    + {s}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -247,21 +289,69 @@ export default async function DashboardPage() {
             Portfolio Preview
           </h2>
           <div className="relative aspect-video rounded-xl bg-muted overflow-hidden group">
-             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-             <div className="absolute bottom-4 left-4 z-20">
-                <p className="font-bold text-lg">{student.selected_template.toUpperCase()}</p>
-                <Link href="/dashboard/templates" className="text-sm text-primary hover:underline">Change template →</Link>
-             </div>
-             {/* Template Preview Placeholder */}
-             <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                <Layout size={48} className="text-primary/20" />
-             </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
+            <div className="absolute bottom-4 left-4 z-20">
+              <p className="font-bold text-lg">{student.selected_template.toUpperCase()}</p>
+              <Link href="/dashboard/templates" className="text-sm text-primary hover:underline">Change template →</Link>
+            </div>
+            {/* Template Preview Placeholder */}
+            <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+              <Layout size={48} className="text-primary/20" />
+            </div>
           </div>
           <div className="bg-secondary p-4 rounded-xl text-sm border border-border">
             <p className="text-muted-foreground mb-3 text-xs uppercase tracking-widest font-bold">Quick Share</p>
             <ShareButton collegeId={student.college_id} />
           </div>
         </div>
+      </div>
+
+      {/* Custom Domain Section (Pro Feature) */}
+      <div className="card-premium p-8 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold font-outfit flex items-center gap-3">
+              <Globe className="text-primary" />
+              Custom Domain
+            </h2>
+            <p className="text-muted-foreground text-sm max-w-xl">
+              Connect your professional domain (e.g., www.yourname.com) to your portfolio.
+              {student.subscription_status !== 'pro' && ' (Upgrade to Pro to unlock)'}
+            </p>
+          </div>
+          {student.subscription_status === 'pro' ? (
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                placeholder="portfolio.yourname.com"
+                className="input-field max-w-xs"
+                disabled
+                value="pending-dns-config..."
+              />
+              <button className="btn-secondary whitespace-nowrap opacity-50 cursor-not-allowed">
+                Connect
+              </button>
+            </div>
+          ) : (
+            <Link href="/dashboard/payments" className="btn-secondary">
+              Unlock Domains
+            </Link>
+          )}
+        </div>
+
+        {student.subscription_status === 'pro' && (
+          <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 flex gap-4">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0">
+              <Clock className="text-yellow-500" size={20} />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-yellow-500 uppercase tracking-widest">Configuration Required</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                To connect your domain, please point your <b>CNAME record</b> to <code className="bg-white/5 px-1 rounded">cname.portfolia.io</code> and wait up to 24 hours for DNS propagation.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

@@ -38,7 +38,7 @@ export default function ModernDark({ student, experiences, projects, education, 
       </nav>
 
       {/* Hero Section */}
-      <section id="about" className="pt-40 pb-24 px-8 max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-center min-h-screen">
+      <section id="about" className="pt-32 md:pt-40 pb-16 md:pb-24 px-6 md:px-8 max-w-6xl mx-auto flex flex-col md:flex-row gap-12 md:gap-16 items-center min-h-screen text-center md:text-left">
         <div className="flex-1 space-y-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary tracking-wide">
             <span className="relative flex h-2 w-2">
@@ -47,9 +47,9 @@ export default function ModernDark({ student, experiences, projects, education, 
             </span>
             AVAILABLE FOR OPPORTUNITIES
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9]">
+          <h1 className="text-5xl md:text-8xl font-bold tracking-tight leading-[0.9]">
              I&apos;m <br/>
-             <span className="bg-gradient-to-r from-primary via-red-400 to-orange-400 bg-clip-text text-transparent">{student.name}</span>
+             <span className="bg-gradient-to-r from-primary via-red-400 to-orange-400 bg-clip-text text-transparent break-words">{student.name}</span>
           </h1>
           <p className="text-2xl text-white/40 font-medium">
              {student.role_title}
@@ -58,7 +58,7 @@ export default function ModernDark({ student, experiences, projects, education, 
              {student.summary}
           </p>
           
-          <div className="flex items-center gap-4 pt-4">
+          <div className="flex items-center justify-center md:justify-start gap-4 pt-4">
             {student.github_url && (
               <a href={normalizeUrl(student.github_url, 'github')} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                 <Code size={20} />
@@ -95,104 +95,120 @@ export default function ModernDark({ student, experiences, projects, education, 
         )}
       </section>
 
-      {/* Experience - Timeline */}
-      <section id="experience" className="py-24 px-8 max-w-6xl mx-auto space-y-16">
-        <div className="flex items-center gap-6">
-          <h2 className="text-4xl font-bold tracking-tight">Experience</h2>
-          <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
-        </div>
-        <div className="relative">
-          {/* Timeline vertical line */}
-          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-white/10 to-transparent" />
-          <div className="space-y-12">
-             {experiences.map((exp, i) => (
-               <div key={i} className="group relative pl-12 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                  {/* Timeline dot */}
-                  <div className="absolute left-0 top-1.5 z-10">
-                    <div className="w-6 h-6 rounded-full bg-[#050505] border-2 border-primary flex items-center justify-center group-hover:bg-primary transition-colors duration-500">
-                      <div className="w-2 h-2 rounded-full bg-primary group-hover:bg-white transition-colors duration-500" />
-                    </div>
-                  </div>
-                  <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-primary/20 transition-all duration-500">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-3">
-                       <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">{exp.role} <span className="text-white/30 font-normal">@ {exp.company}</span></h3>
-                       <span className="text-xs font-mono text-primary/60 bg-primary/5 px-3 py-1 rounded-full border border-primary/10">{exp.duration}</span>
-                    </div>
-                    <p className="text-white/40 leading-relaxed">{exp.description}</p>
-                  </div>
-               </div>
-             ))}
-          </div>
-        </div>
-      </section>
+      {/* Dynamic Sections */}
+      {(student.section_order || ['experience', 'projects', 'skills', 'education']).map((section: string) => {
+        if (section === 'summary') return null; // Summary is rendered in Hero
 
-      {/* Projects */}
-      <section id="projects" className="py-24 px-8 max-w-6xl mx-auto space-y-16">
-        <div className="flex items-center gap-6">
-          <h2 className="text-4xl font-bold tracking-tight">Featured Projects</h2>
-          <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
-        </div>
-        <div className="grid md:grid-cols-2 gap-6">
-           {projects.map((proj, i) => (
-             <div key={i} className="group p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/30 transition-all duration-500 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1">
-                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">{proj.title}</h3>
-                <p className="text-white/35 mb-6 line-clamp-3 leading-relaxed">{proj.description}</p>
-                <div className="flex flex-wrap gap-2 mb-8">
-                   {proj.tech.split(',').map((t:string, idx:number) => (
-                     <span key={idx} className="px-3 py-1 rounded-full bg-primary/5 text-[10px] font-bold uppercase tracking-widest text-primary/70 border border-primary/10">{t.trim()}</span>
+        if (section === 'experience' && experiences.length > 0) {
+          return (
+            <section key="experience" id="experience" className="py-24 px-8 max-w-6xl mx-auto space-y-16">
+              <div className="flex items-center gap-6">
+                <h2 className="text-4xl font-bold tracking-tight">Experience</h2>
+                <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+              </div>
+              <div className="relative">
+                <div className="absolute left-[11px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-white/10 to-transparent" />
+                <div className="space-y-12">
+                   {experiences.map((exp, i) => (
+                     <div key={i} className="group relative pl-12 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                        <div className="absolute left-0 top-1.5 z-10">
+                          <div className="w-6 h-6 rounded-full bg-[#050505] border-2 border-primary flex items-center justify-center group-hover:bg-primary transition-colors duration-500">
+                            <div className="w-2 h-2 rounded-full bg-primary group-hover:bg-white transition-colors duration-500" />
+                          </div>
+                        </div>
+                        <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05] hover:border-primary/20 transition-all duration-500">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between mb-3">
+                             <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">{exp.role} <span className="text-white/30 font-normal">@ {exp.company}</span></h3>
+                             <span className="text-xs font-mono text-primary/60 bg-primary/5 px-3 py-1 rounded-full border border-primary/10">{exp.duration}</span>
+                          </div>
+                          <p className="text-white/40 leading-relaxed">{exp.description}</p>
+                        </div>
+                     </div>
                    ))}
                 </div>
-                {proj.link && (
-                  <a href={proj.link} target="_blank" className="inline-flex items-center gap-2 text-sm font-bold text-white/40 group-hover:text-primary transition-all duration-300">
-                    VIEW PROJECT <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
-                  </a>
-                )}
-             </div>
-           ))}
-        </div>
-      </section>
+              </div>
+            </section>
+          )
+        }
 
-      {/* Skills & Edu */}
-      <section id="skills" className="py-24 px-8 max-w-6xl mx-auto grid md:grid-cols-2 gap-20">
-         <div className="space-y-12">
-            <div className="flex items-center gap-6">
-              <h2 className="text-4xl font-bold tracking-tight">Tech Stack</h2>
-              <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               {skills.map((skill, i) => (
-                  <div key={i} className="group p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-500 space-y-3">
-                     <div className="flex justify-between items-center">
-                       <span className="font-bold text-sm group-hover:text-primary transition-colors duration-300">{skill.name}</span>
-                       <span className="text-[10px] font-mono text-white/20">{skill.level}%</span>
-                     </div>
-                     <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-primary to-primary/50 rounded-full transition-all duration-1000" style={{ width: `${skill.level}%` }} />
-                     </div>
-                  </div>
-               ))}
-            </div>
-         </div>
+        if (section === 'projects' && projects.length > 0) {
+          return (
+            <section key="projects" id="projects" className="py-24 px-8 max-w-6xl mx-auto space-y-16">
+              <div className="flex items-center gap-6">
+                <h2 className="text-4xl font-bold tracking-tight">Featured Projects</h2>
+                <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                 {projects.map((proj, i) => (
+                   <div key={i} className="group p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/30 transition-all duration-500 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1">
+                      <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">{proj.title}</h3>
+                      <p className="text-white/35 mb-6 line-clamp-3 leading-relaxed">{proj.description}</p>
+                      <div className="flex flex-wrap gap-2 mb-8">
+                         {proj.tech.split(',').map((t:string, idx:number) => (
+                           <span key={idx} className="px-3 py-1 rounded-full bg-primary/5 text-[10px] font-bold uppercase tracking-widest text-primary/70 border border-primary/10">{t.trim()}</span>
+                         ))}
+                      </div>
+                      {proj.link && (
+                        <a href={proj.link} target="_blank" className="inline-flex items-center gap-2 text-sm font-bold text-white/40 group-hover:text-primary transition-all duration-300">
+                          VIEW PROJECT <ExternalLink size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
+                        </a>
+                      )}
+                   </div>
+                 ))}
+              </div>
+            </section>
+          )
+        }
 
-         <div className="space-y-12">
-            <div className="flex items-center gap-6">
-              <h2 className="text-4xl font-bold tracking-tight">Education</h2>
-              <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
-            </div>
-            <div className="space-y-6">
-               {education.map((edu, i) => (
-                  <div key={i} className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-500 space-y-2">
-                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">{edu.degree}</h3>
-                     <p className="text-white/40 text-sm">{edu.college}</p>
-                     <div className="flex gap-4 text-xs font-mono text-primary/40">
-                        <span>{edu.year}</span>
-                        <span>CGPA: {edu.cgpa}</span>
-                     </div>
-                  </div>
-               ))}
-            </div>
-         </div>
-      </section>
+        if (section === 'skills' && skills.length > 0) {
+          return (
+            <section key="skills" id="skills" className="py-24 px-8 max-w-6xl mx-auto space-y-12">
+              <div className="flex items-center gap-6">
+                <h2 className="text-4xl font-bold tracking-tight">Tech Stack</h2>
+                <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 {skills.map((skill, i) => (
+                    <div key={i} className="group p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-500 space-y-3">
+                       <div className="flex justify-between items-center">
+                         <span className="font-bold text-sm group-hover:text-primary transition-colors duration-300">{skill.name}</span>
+                         <span className="text-[10px] font-mono text-white/20">{skill.level}%</span>
+                       </div>
+                       <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-primary/50 rounded-full transition-all duration-1000" style={{ width: `${skill.level}%` }} />
+                       </div>
+                    </div>
+                 ))}
+              </div>
+            </section>
+          )
+        }
+
+        if (section === 'education' && education.length > 0) {
+          return (
+            <section key="education" id="education" className="py-24 px-8 max-w-6xl mx-auto space-y-12">
+              <div className="flex items-center gap-6">
+                <h2 className="text-4xl font-bold tracking-tight">Education</h2>
+                <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                 {education.map((edu, i) => (
+                    <div key={i} className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-500 space-y-2">
+                       <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">{edu.degree}</h3>
+                       <p className="text-white/40 text-sm">{edu.college}</p>
+                       <div className="flex gap-4 text-xs font-mono text-primary/40">
+                          <span>{edu.year}</span>
+                          <span>CGPA: {edu.cgpa}</span>
+                       </div>
+                    </div>
+                 ))}
+              </div>
+            </section>
+          )
+        }
+
+        return null;
+      })}
 
       {/* Footer */}
       <footer className="py-24 border-t border-white/[0.06] text-center px-8 relative">

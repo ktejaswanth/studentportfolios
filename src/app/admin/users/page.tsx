@@ -84,7 +84,7 @@ export default function UserManagement() {
                 <tr>
                    <th className="px-6 py-4">Student</th>
                    <th className="px-6 py-4">College ID</th>
-                   <th className="px-6 py-4">Plan</th>
+                   <th className="px-6 py-4">Plan & Validity</th>
                    <th className="px-6 py-4">Account Type</th>
                    <th className="px-6 py-4">Actions</th>
                 </tr>
@@ -122,9 +122,14 @@ export default function UserManagement() {
                          </span>
                       </td>
                       <td className="px-6 py-4">
-                         <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${u.subscription_status === 'pro' ? 'bg-accent/20 text-accent ring-1 ring-accent/50' : 'bg-white/5 text-muted-foreground'}`}>
-                            {u.subscription_status || 'free'}
-                         </span>
+                         <div className="flex flex-col gap-1">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase w-fit ${u.subscription_status === 'pro' ? 'bg-accent/20 text-accent ring-1 ring-accent/50' : 'bg-white/5 text-muted-foreground'}`}>
+                               {u.subscription_status || 'free'}
+                            </span>
+                            <div className="text-[10px] text-muted-foreground">
+                               {u.subscription_activated_at ? new Date(u.subscription_activated_at).toLocaleDateString() : 'N/A'} - {u.subscription_expiry ? new Date(u.subscription_expiry).toLocaleDateString() : 'N/A'}
+                            </div>
+                         </div>
                       </td>
                       <td className="px-6 py-4">
                          <div className="flex items-center gap-2">

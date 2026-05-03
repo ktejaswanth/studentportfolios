@@ -5,6 +5,8 @@ import MinimalClean from '@/components/templates/MinimalClean'
 import GradientBold from '@/components/templates/GradientBold'
 import LightCreative from '@/components/templates/LightCreative'
 import ProfessionalWhite from '@/components/templates/ProfessionalWhite'
+import { PasswordLock } from '@/components/portfolio/PasswordLock'
+import { PrintButton } from '@/components/portfolio/PrintButton'
 
 export default async function PublicPortfolio({ params }: { params: Promise<{ collegeId: string }> }) {
   const supabase = await createClient()
@@ -12,6 +14,11 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
 
   // 1. Increment View Count (Fire and forget from server)
   await supabase.rpc('increment_view_count', { target_college_id: collegeId })
+  try {
+    await supabase.from('page_views').insert({ college_id: collegeId })
+  } catch (e) {
+    // Ignore error if table doesn't exist yet
+  }
 
   // 2. Fetch student
   const { data: student } = await supabase
@@ -75,7 +82,10 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
 
   return (
     <div style={themeStyle}>
-      {renderedTemplate}
+      <PasswordLock expectedPassword={student.portfolio_password || ''}>
+         {renderedTemplate}
+         <PrintButton />
+      </PasswordLock>
     </div>
   )
 }

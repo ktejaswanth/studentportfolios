@@ -18,10 +18,53 @@ export default async function AnalyticsPage() {
 
   const isPro = student.subscription_status === 'pro'
 
-  // Generate some visually appealing mock data scaled to their real view count
+  // Fetch real page views if the table exists
+  let realViews = []
+  try {
+    const { data } = await supabase
+      .from('page_views')
+      .select('viewed_at, section')
+      .eq('college_id', student.college_id)
+      .gte('viewed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+    
+    if (data) realViews = data
+  } catch (e) {
+    // Table might not exist yet
+  }
+
   const baseViews = student.view_count || 0
-  const dailyAverage = Math.round(baseViews / 30) || 1
+  
+  // Calculate real daily average if we have data, otherwise fallback
+  const dailyAverage = realViews.length > 0 
+    ? Math.round(realViews.length / 30) || 1 
+    : Math.round(baseViews / 30) || 1
+    
   const clickThrough = Math.min(Math.round(baseViews * 0.4), 100)
+
+  // Generate chart data based on real views if available
+  const getChartData = () => {
+    if (realViews.length === 0) {
+      return [...Array(30)].map(() => Math.random() * 80 + 20)
+    }
+    
+    // Group by day for the last 30 days
+    const days = new Array(30).fill(0)
+    const now = new Date()
+    realViews.forEach((v: any) => {
+       const viewDate = new Date(v.viewed_at)
+       const diffTime = Math.abs(now.getTime() - viewDate.getTime())
+       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+       if (diffDays <= 30 && diffDays > 0) {
+         days[30 - diffDays]++
+       }
+    })
+    
+    // Normalize to percentages
+    const max = Math.max(...days, 1)
+    return days.map(d => (d / max) * 100 || 5) // Min 5% height for visibility
+  }
+  
+  const chartData = getChartData()
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto relative">
@@ -70,12 +113,11 @@ export default async function AnalyticsPage() {
           <h3 className="text-xl font-bold font-outfit">30-Day Traffic Overview</h3>
           <div className="flex-1 border-b border-l border-white/10 flex items-end justify-between p-4 relative">
              {/* Mock Chart Bars */}
-             {[...Array(30)].map((_, i) => {
-                const height = Math.random() * 80 + 20; // 20% to 100%
+             {chartData.map((height, i) => {
                 return (
-                  <div key={i} className="w-[2%] bg-primary/40 hover:bg-primary rounded-t-sm transition-all cursor-pointer group relative" style={{ height: `${height}%` }}>
-                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                       {Math.round(height * (dailyAverage / 50))}
+                  <div key={i} className="w-[2%] bg-primary/40 hover:bg-primary rounded-t-sm transition-all cursor-pointer group relative" style={{ height: `${Math.max(height, 5)}%` }}>
+                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                       {realViews.length > 0 ? Math.round((height / 100) * Math.max(1, ...chartData)) : Math.round(height * (dailyAverage / 50))} views
                      </div>
                   </div>
                 )

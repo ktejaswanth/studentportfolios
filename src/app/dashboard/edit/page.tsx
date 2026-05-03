@@ -16,7 +16,10 @@ import {
   Trash2, 
   Save, 
   Loader2,
-  Upload
+  Upload,
+  ArrowUp,
+  ArrowDown,
+  Layout
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
@@ -44,7 +47,9 @@ export default function EditPortfolio() {
     resume_url: '',
     college_id: '',
     theme_color: '#E53935',
-    subscription_status: 'free'
+    subscription_status: 'free',
+    portfolio_password: '',
+    section_order: ['summary', 'experience', 'projects', 'education', 'skills']
   })
 
   const [experiences, setExperiences] = useState<Experience[]>([])
@@ -79,7 +84,9 @@ export default function EditPortfolio() {
         resume_url: student.resume_url || '',
         college_id: student.college_id,
         theme_color: student.theme_color || '#E53935',
-        subscription_status: student.subscription_status || 'free'
+        subscription_status: student.subscription_status || 'free',
+        portfolio_password: student.portfolio_password || '',
+        section_order: student.section_order || ['summary', 'experience', 'projects', 'education', 'skills']
       })
       
       // Fetch related data
@@ -171,17 +178,52 @@ export default function EditPortfolio() {
     </div>
   )
 
+  const [aiLoading, setAiLoading] = useState(false)
+  const generateWithAI = async (type: 'summary' | 'project', index?: number) => {
+    if (!personal.role_title) {
+       toast.error('Please enter a Headline / Role Type first'); return;
+    }
+    setAiLoading(true)
+    try {
+       const prompt = type === 'summary' 
+         ? `I am a ${personal.role_title}. I have skills in ${skills.map(s => s.name).join(', ')}. Generate a short professional bio.`
+         : `I am a ${personal.role_title}. This project is called ${index !== undefined ? projects[index].title : ''} using ${index !== undefined ? projects[index].tech : ''}. Describe it.`;
+         
+       const res = await fetch('/api/ai/generate', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ type, prompt })
+       });
+       const data = await res.json();
+       
+       if (data.error) throw new Error(data.error);
+       
+       if (type === 'summary') {
+          setPersonal({...personal, summary: data.text})
+       } else if (type === 'project' && index !== undefined) {
+          const newProj = [...projects];
+          newProj[index].description = data.text;
+          setProjects(newProj);
+       }
+       toast.success('AI generation successful!')
+    } catch (err) {
+       toast.error('AI Generation failed')
+    }
+    setAiLoading(false)
+  }
+
   return (
-    <div className="flex flex-col gap-12 max-w-4xl mx-auto py-8">
-      <div className="flex items-center justify-between sticky top-24 z-40 bg-background/80 backdrop-blur-md py-4 border-b border-white/5">
-        <h1 className="text-3xl font-bold font-outfit">Edit Portfolio</h1>
+    <div className="flex flex-col gap-8 md:gap-12 max-w-4xl mx-auto py-4 md:py-8">
+      <div className="flex items-center justify-between sticky top-[64px] md:top-24 z-40 bg-background/80 backdrop-blur-md py-3 md:py-4 border-b border-white/5 -mx-4 px-4 md:mx-0 md:px-0">
+        <h1 className="text-2xl md:text-3xl font-bold font-outfit">Edit Portfolio</h1>
         <button 
           onClick={handleSave} 
           disabled={saving}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 py-2 px-4 text-sm"
         >
-          {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-          Save Changes
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          <span className="hidden sm:inline">Save Changes</span>
+          <span className="sm:hidden">Save</span>
         </button>
       </div>
 
@@ -256,12 +298,76 @@ export default function EditPortfolio() {
                  <input type="file" className="hidden" accept=".pdf" onChange={(e) => handleFileUpload(e, 'resume')} />
               </label>
            </div>
+           
+           <div className="md:col-span-1 space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                Portfolio Password
+                {personal.subscription_status !== 'pro' && <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">Pro</span>}
+              </label>
+              <input 
+                type="password"
+                className="input-field" 
+                placeholder="Leave empty for public"
+                value={personal.portfolio_password}
+                onChange={(e) => personal.subscription_status === 'pro' && setPersonal({...personal, portfolio_password: e.target.value})}
+                disabled={personal.subscription_status !== 'pro'}
+              />
+           </div>
         </div>
+      </section>
+
+      {/* Layout Settings */}
+      <section id="layout" className="space-y-6">
+         <div className="flex items-center justify-between">
+            <SectionTitle icon={<Layout size={24} />} title="Layout Ordering" />
+         </div>
+         <div className="card-premium space-y-2">
+            <p className="text-sm text-muted-foreground mb-4">Rearrange the sections of your portfolio. (Premium feature)</p>
+            {personal.section_order?.map((section: string, idx: number) => (
+               <div key={section} className={`flex items-center justify-between p-3 rounded-lg border border-white/5 ${personal.subscription_status === 'pro' ? 'bg-white/5' : 'bg-white/[0.02] opacity-50'}`}>
+                  <span className="text-sm font-bold capitalize">{section}</span>
+                  <div className="flex gap-2">
+                     <button 
+                       disabled={personal.subscription_status !== 'pro' || idx === 0}
+                       onClick={() => {
+                          const newOrder = [...personal.section_order];
+                          [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
+                          setPersonal({...personal, section_order: newOrder})
+                       }}
+                       className="p-1 hover:bg-white/10 rounded transition-colors disabled:opacity-30"
+                     >
+                       <ArrowUp size={16} />
+                     </button>
+                     <button 
+                       disabled={personal.subscription_status !== 'pro' || idx === personal.section_order.length - 1}
+                       onClick={() => {
+                          const newOrder = [...personal.section_order];
+                          [newOrder[idx + 1], newOrder[idx]] = [newOrder[idx], newOrder[idx + 1]];
+                          setPersonal({...personal, section_order: newOrder})
+                       }}
+                       className="p-1 hover:bg-white/10 rounded transition-colors disabled:opacity-30"
+                     >
+                       <ArrowDown size={16} />
+                     </button>
+                  </div>
+               </div>
+            ))}
+         </div>
       </section>
 
       {/* Summary */}
       <section id="summary" className="space-y-6">
-         <SectionTitle icon={<FileText size={24} />} title="Professional Summary" />
+         <div className="flex items-center justify-between">
+            <SectionTitle icon={<FileText size={24} />} title="Professional Summary" />
+            <button 
+               onClick={() => generateWithAI('summary')} 
+               disabled={aiLoading}
+               className="btn-secondary flex items-center gap-2 py-1 px-3 text-xs"
+            >
+               {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <span>🪄</span>}
+               AI Auto-Write
+            </button>
+         </div>
          <div className="card-premium">
             <textarea 
               className="input-field min-h-[150px] resize-none" 
@@ -354,7 +460,20 @@ export default function EditPortfolio() {
                  </button>
                  <div className="space-y-4">
                     <input placeholder="Project Title" className="input-field" value={proj.title} onChange={(e) => { const n = [...projects]; n[i].title = e.target.value; setProjects(n); }} />
-                    <textarea placeholder="Brief description..." className="input-field min-h-[80px] resize-none" value={proj.description} onChange={(e) => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} />
+                    <div className="space-y-2">
+                       <div className="flex items-center justify-between">
+                         <span className="text-xs text-muted-foreground font-medium">Description</span>
+                         <button 
+                           onClick={() => generateWithAI('project', i)} 
+                           disabled={aiLoading}
+                           className="btn-secondary flex items-center gap-2 py-0.5 px-2 text-[10px]"
+                         >
+                           {aiLoading ? <Loader2 size={10} className="animate-spin" /> : <span>🪄</span>}
+                           AI Generate
+                         </button>
+                       </div>
+                       <textarea placeholder="Brief description..." className="input-field min-h-[80px] resize-none" value={proj.description} onChange={(e) => { const n = [...projects]; n[i].description = e.target.value; setProjects(n); }} />
+                    </div>
                     <input placeholder="Tech Stack (e.g. React, Node, SQL)" className="input-field" value={proj.tech} onChange={(e) => { const n = [...projects]; n[i].tech = e.target.value; setProjects(n); }} />
                     <input placeholder="Live/GitHub Link" className="input-field" value={proj.link} onChange={(e) => { const n = [...projects]; n[i].link = e.target.value; setProjects(n); }} />
                  </div>

@@ -2,16 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { GraduationCap, LayoutDashboard, User, LogOut, Shield, CreditCard } from 'lucide-react'
+import { GraduationCap, LayoutDashboard, User, LogOut, Shield, CreditCard, Menu, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
   const pathname = usePathname()
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [pathname])
   const supabase = createClient()
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [role, setRole] = useState<string | null>(null)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -64,99 +68,114 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
+          {/* ... Desktop Nav Content (Keep existing logic) ... */}
           {user && pathname.startsWith('/dashboard') ? (
-            // Dashboard Nav Bar (After Login inside Dashboard)
             <>
               {role === 'admin' && (
-                <Link 
-                  href="/admin" 
-                  className="flex items-center gap-2 text-sm font-bold text-accent transition-colors hover:text-white"
-                >
-                  <Shield size={18} className="text-accent" />
-                  Admin
+                <Link href="/admin" className="flex items-center gap-2 text-sm font-bold text-accent transition-colors hover:text-white">
+                  <Shield size={18} className="text-accent" /> Admin
                 </Link>
               )}
-              <Link 
-                href="/dashboard" 
-                className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-white ${pathname === '/dashboard' ? 'text-white' : 'text-muted-foreground'}`}
-              >
-                <LayoutDashboard size={18} />
-                Overview
+              <Link href="/dashboard" className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-white ${pathname === '/dashboard' ? 'text-white' : 'text-muted-foreground'}`}>
+                <LayoutDashboard size={18} /> Overview
               </Link>
-              <Link 
-                href="/dashboard/templates" 
-                className={`text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/templates') ? 'text-white' : 'text-muted-foreground'}`}
-              >
+              <Link href="/dashboard/templates" className={`text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/templates') ? 'text-white' : 'text-muted-foreground'}`}>
                 Templates
               </Link>
-              <Link 
-                href="/dashboard/analytics" 
-                className={`text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/analytics') ? 'text-white' : 'text-muted-foreground'}`}
-              >
+              <Link href="/dashboard/analytics" className={`text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/analytics') ? 'text-white' : 'text-muted-foreground'}`}>
                 Analytics
               </Link>
-              <Link 
-                href="/pricing" 
-                className="text-sm font-medium text-muted-foreground hover:text-white transition-colors"
-              >
+              <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
                 Pricing
               </Link>
-              <Link 
-                href="/dashboard/payments" 
-                className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/payments') ? 'text-white' : 'text-muted-foreground'}`}
-              >
-                <CreditCard size={18} />
-                Billing
+              <Link href="/dashboard/payments" className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-white ${pathname.startsWith('/dashboard/payments') ? 'text-white' : 'text-muted-foreground'}`}>
+                <CreditCard size={18} /> Billing
               </Link>
-              <button 
-                onClick={handleSignOut}
-                className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors ml-4"
-              >
-                <LogOut size={18} />
-                Logout
+              <button onClick={handleSignOut} className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors ml-4">
+                <LogOut size={18} /> Logout
               </button>
             </>
           ) : user ? (
-            // Public Nav Bar (After Login outside Dashboard)
             <>
-              <Link href="/" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/' ? 'text-white' : 'text-muted-foreground'}`}>
-                Home
-              </Link>
-              <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/pricing' ? 'text-white' : 'text-muted-foreground'}`}>
-                Pricing
-              </Link>
+              <Link href="/" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/' ? 'text-white' : 'text-muted-foreground'}`}>Home</Link>
+              <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/pricing' ? 'text-white' : 'text-muted-foreground'}`}>Pricing</Link>
               {role === 'admin' && (
                 <Link href="/admin" className="flex items-center gap-2 text-sm font-bold text-accent transition-colors hover:text-white">
                   <Shield size={18} className="text-accent" /> Admin
                 </Link>
               )}
               <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors ml-4">
-                <LayoutDashboard size={18} />
-                Go to Dashboard
+                <LayoutDashboard size={18} /> Go to Dashboard
               </Link>
               <button onClick={handleSignOut} className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors pl-4 border-l border-white/10">
                 <LogOut size={18} />
               </button>
             </>
           ) : (
-            // Public Nav Bar (Before Login)
             <>
-              <Link href="/" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/' ? 'text-white' : 'text-muted-foreground'}`}>
-                Home
-              </Link>
-              <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/pricing' ? 'text-white' : 'text-muted-foreground'}`}>
-                Pricing
-              </Link>
-              <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors ml-4">
-                Login
-              </Link>
-              <Link href="/signup" className="btn-primary py-2 px-4 text-sm">
-                Get Started
-              </Link>
+              <Link href="/" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/' ? 'text-white' : 'text-muted-foreground'}`}>Home</Link>
+              <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-white ${pathname === '/pricing' ? 'text-white' : 'text-muted-foreground'}`}>Pricing</Link>
+              <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors ml-4">Login</Link>
+              <Link href="/signup" className="btn-primary py-2 px-4 text-sm">Get Started</Link>
             </>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden p-2 text-white hover:bg-white/10 rounded-xl transition-colors"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Nav Overlay */}
+      {isMenuOpen && (
+        <div className="absolute top-20 left-4 right-4 glass p-6 rounded-2xl md:hidden flex flex-col gap-4 animate-in slide-in-from-top-4 duration-300">
+           {user && pathname.startsWith('/dashboard') ? (
+             <>
+               <Link href="/dashboard" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                 <LayoutDashboard size={20} className="text-primary" />
+                 <span className="font-medium">Overview</span>
+               </Link>
+               <Link href="/dashboard/templates" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                 <Layout size={20} className="text-primary" />
+                 <span className="font-medium">Templates</span>
+               </Link>
+               <Link href="/dashboard/analytics" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                 <Share2 size={20} className="text-primary" />
+                 <span className="font-medium">Analytics</span>
+               </Link>
+               <Link href="/dashboard/payments" className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                 <CreditCard size={20} className="text-primary" />
+                 <span className="font-medium">Billing</span>
+               </Link>
+               <hr className="border-white/5 my-2" />
+               <button onClick={handleSignOut} className="flex items-center gap-3 p-3 rounded-xl text-destructive hover:bg-destructive/5 transition-colors">
+                 <LogOut size={20} />
+                 <span className="font-medium">Logout</span>
+               </button>
+             </>
+           ) : user ? (
+             <>
+               <Link href="/" className="p-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Home</Link>
+               <Link href="/pricing" className="p-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Pricing</Link>
+               <Link href="/dashboard" className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary transition-colors">
+                 <LayoutDashboard size={20} />
+                 <span className="font-medium">Go to Dashboard</span>
+               </Link>
+             </>
+           ) : (
+             <>
+               <Link href="/" className="p-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Home</Link>
+               <Link href="/pricing" className="p-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Pricing</Link>
+               <Link href="/login" className="p-3 rounded-xl hover:bg-white/5 transition-colors font-medium">Login</Link>
+               <Link href="/signup" className="btn-primary py-3 px-6 text-center">Get Started</Link>
+             </>
+           )}
+        </div>
+      )}
     </nav>
   )
 }
