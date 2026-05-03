@@ -27,15 +27,17 @@ export default function LoginPage() {
     })
 
     if (error) {
+      console.error('Login error:', error)
       toast.error(error.message)
       setLoading(false)
       return
     }
 
+    console.log('Login successful, redirecting...')
     toast.success('Sign in successful!')
-    router.refresh() // Refresh middleware state
-    router.push('/dashboard')
-    setLoading(false)
+    
+    // Use window.location.href for a full reload to ensure middleware sees the new session
+    window.location.href = '/dashboard'
   }
 
   return (

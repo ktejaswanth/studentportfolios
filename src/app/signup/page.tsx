@@ -85,8 +85,13 @@ export default function SignupPage() {
         return
       }
 
-      toast.success('Registration successful! Please check your email or login.')
-      router.push('/dashboard')
+      console.log('Signup successful, record created')
+      toast.success('Account created! redirecting to dashboard...')
+      window.location.href = '/dashboard'
+    } else {
+      console.log('Signup successful, but no user data returned immediately')
+      toast.success('Registration successful! Please check your email to verify your account.')
+      router.push('/login')
     }
     
     setLoading(false)

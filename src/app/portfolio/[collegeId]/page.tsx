@@ -5,27 +5,12 @@ import MinimalClean from '@/components/templates/MinimalClean'
 import GradientBold from '@/components/templates/GradientBold'
 import LightCreative from '@/components/templates/LightCreative'
 import ProfessionalWhite from '@/components/templates/ProfessionalWhite'
+import FuturisticDark from '@/components/templates/FuturisticDark'
 import { PasswordLock } from '@/components/portfolio/PasswordLock'
 import { PrintButton } from '@/components/portfolio/PrintButton'
 import { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: Promise<{ collegeId: string }> }): Promise<Metadata> {
-  const supabase = await createClient()
-  const { collegeId } = await params
-  const { data: student } = await supabase.from('students').select('name, role_title, summary').eq('college_id', collegeId).maybeSingle()
-  
-  if (!student) return { title: 'Portfolio Not Found' }
 
-  return {
-    title: `${student.name} | ${student.role_title} Portfolio`,
-    description: student.summary || `Professional portfolio of ${student.name}`,
-    openGraph: {
-      title: `${student.name}'s Professional Portfolio`,
-      description: student.summary,
-      type: 'website'
-    }
-  }
-}
 
 export default async function PublicPortfolio({ params }: { params: Promise<{ collegeId: string }> }) {
   const supabase = await createClient()
@@ -71,11 +56,12 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
   }
 
   // Fetch related data
-  const [exp, proj, edu, sk] = await Promise.all([
+  const [exp, proj, edu, sk, cert] = await Promise.all([
     supabase.from('experiences').select('*').eq('college_id', collegeId).order('created_at'),
     supabase.from('projects').select('*').eq('college_id', collegeId).order('created_at'),
     supabase.from('education').select('*').eq('college_id', collegeId).order('created_at'),
-    supabase.from('skills').select('*').eq('college_id', collegeId).order('created_at')
+    supabase.from('skills').select('*').eq('college_id', collegeId).order('created_at'),
+    supabase.from('certifications').select('*').eq('college_id', collegeId).order('created_at')
   ])
 
   const templateProps = {
@@ -83,7 +69,8 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
     experiences: exp.data || [],
     projects: proj.data || [],
     education: edu.data || [],
-    skills: sk.data || []
+    skills: sk.data || [],
+    certifications: cert.data || []
   }
 
   // Render correct template
@@ -94,13 +81,48 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ co
     case 'gradient-bold': renderedTemplate = <GradientBold {...templateProps} />; break;
     case 'light-creative': renderedTemplate = <LightCreative {...templateProps} />; break;
     case 'professional-white': renderedTemplate = <ProfessionalWhite {...templateProps} />; break;
+    case 'futuristic-dark': renderedTemplate = <FuturisticDark {...templateProps} />; break;
     default: renderedTemplate = <ModernDark {...templateProps} />; break;
   }
 
-  const themeStyle = student.theme_color ? { '--app-primary': student.theme_color } as React.CSSProperties : {};
+  const fontConfig: any = {
+    'Outfit': "'Outfit', sans-serif",
+    'Inter': "'Inter', sans-serif",
+    'Roboto': "'Roboto', sans-serif",
+    'Montserrat': "'Montserrat', sans-serif",
+    'Playfair Display': "'Playfair Display', serif"
+  };
+
+  const fontSizeConfig: any = {
+    'small': '14px',
+    'standard': '16px',
+    'large': '18px'
+  };
+
+  const themeStyle = { 
+    '--app-primary': student.theme_color || '#E53935',
+    '--app-font': fontConfig[student.font_family || 'Outfit'],
+    '--app-font-size': fontSizeConfig[student.font_size || 'standard']
+  } as React.CSSProperties;
 
   return (
-    <div style={themeStyle}>
+    <div style={themeStyle} id="portfolio-root" className="min-h-screen">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Roboto:wght@300;400;500;700;900&display=swap');
+        
+        #portfolio-root {
+          font-family: var(--app-font) !important;
+          font-size: var(--app-font-size) !important;
+        }
+        
+        #portfolio-root .font-outfit, 
+        #portfolio-root .font-inter, 
+        #portfolio-root .font-roboto, 
+        #portfolio-root .font-montserrat, 
+        #portfolio-root .font-playfair {
+          font-family: var(--app-font) !important;
+        }
+      `}} />
       <PasswordLock expectedPassword={student.portfolio_password || ''}>
          {renderedTemplate}
          <PrintButton />

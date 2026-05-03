@@ -19,7 +19,7 @@ export default async function AnalyticsPage() {
   const isPro = student.subscription_status === 'pro'
 
   // Fetch real page views if the table exists
-  let realViews = []
+  let realViews: any[] = []
   try {
     const { data } = await supabase
       .from('page_views')

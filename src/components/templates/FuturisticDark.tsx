@@ -1,7 +1,7 @@
 import { Code, Link2, Mail, ExternalLink, FileText, ChevronRight, Sparkles, ArrowRight } from 'lucide-react'
 import { normalizeUrl } from '@/lib/utils'
 
-export default function GradientBold({ student, experiences, projects, education, skills, certifications }: any) {
+export default function FuturisticDark({ student, experiences, projects, education, skills, certifications }: any) {
   return (
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-purple-500/30 overflow-x-hidden font-outfit">
       {/* Rich Ambient Background */}

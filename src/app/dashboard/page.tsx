@@ -37,22 +37,39 @@ export default async function DashboardPage() {
     .maybeSingle()
 
   if (!student) {
+    console.log('No student profile found for user, creating default...')
     // Auto-Recovery: If auth exists but profile doesn't, create it now!
     const defaultCollegeId = `ID-${Math.floor(Math.random() * 100000)}`
 
     const oneYearExpiry = new Date()
     oneYearExpiry.setFullYear(oneYearExpiry.getFullYear() + 1)
 
-    await supabase.from('students').insert({
+    const { error: insertError } = await supabase.from('students').insert({
       college_id: defaultCollegeId,
       user_id: user.id,
       name: user.email?.split('@')[0].toUpperCase() || 'NEW STUDENT',
       email: user.email,
-      role: 'admin', // Make them admin automatically so they can test it
-      subscription_status: 'pro',
+      role: 'student', // Default system role
+      role_title: 'Student', // Professional title
+      subscription_status: 'free',
       subscription_activated_at: new Date().toISOString(),
       subscription_expiry: oneYearExpiry.toISOString()
     })
+
+    if (insertError) {
+      console.error('Failed to create student profile:', insertError)
+      // If we can't create a profile, we can't show the dashboard
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <h1 className="text-2xl font-bold">Profile Creation Failed</h1>
+          <p className="text-muted-foreground text-center max-w-md">
+            We couldn't initialize your profile automatically. Please try again or contact support.
+          </p>
+          <p className="text-xs font-mono text-red-500">{insertError.message}</p>
+          <Link href="/login" className="btn-primary mt-4">Back to Login</Link>
+        </div>
+      )
+    }
 
     // Refresh the page to load the new profile
     redirect('/dashboard')
@@ -155,7 +172,15 @@ export default async function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold font-outfit">Hello, {student.name.split(' ')[0]}! 👋</h1>
-          <p className="text-muted-foreground italic">Managing portfolio for ID: <span className="text-foreground font-mono">{student.college_id}</span></p>
+          <div className="flex flex-col gap-1">
+             <p className="text-muted-foreground italic">Managing portfolio for ID: <span className="text-foreground font-mono">{student.college_id}</span></p>
+             {student.updated_at && (
+                <p className="text-[10px] text-muted-foreground/60 flex items-center gap-1.5 uppercase tracking-[0.15em] font-bold">
+                  <Clock size={10} className="text-primary" />
+                  Last Synced: {new Date(student.updated_at).toLocaleString()}
+                </p>
+             )}
+          </div>
         </div>
         <div className="flex flex-col md:items-end gap-4">
           {daysRemaining !== null && (

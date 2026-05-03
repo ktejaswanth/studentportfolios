@@ -7,9 +7,10 @@ type PortfolioProps = {
   projects: any[];
   education: any[];
   skills: any[];
+  certifications: any[];
 }
 
-export default function ModernDark({ student, experiences, projects, education, skills }: PortfolioProps) {
+export default function ModernDark({ student, experiences, projects, education, skills, certifications }: PortfolioProps) {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 overflow-x-hidden">
       {/* Ambient Background Orbs */}
@@ -55,7 +56,7 @@ export default function ModernDark({ student, experiences, projects, education, 
              {student.role_title}
           </p>
           <p className="text-lg text-white/30 max-w-xl leading-relaxed">
-             {student.summary}
+             {student.introduction || student.summary}
           </p>
           
           <div className="flex items-center justify-center md:justify-start gap-4 pt-4">
@@ -98,6 +99,85 @@ export default function ModernDark({ student, experiences, projects, education, 
       {/* Dynamic Sections */}
       {(student.section_order || ['experience', 'projects', 'skills', 'education']).map((section: string) => {
         if (section === 'summary') return null; // Summary is rendered in Hero
+
+        if (section === 'about' && student.about_me) {
+          return (
+            <section key="about-me" id="about-me" className="py-24 px-8 max-w-6xl mx-auto space-y-12">
+               <div className="flex items-center gap-6">
+                 <h2 className="text-4xl font-bold tracking-tight">About Me</h2>
+                 <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+               </div>
+               <div className="p-8 md:p-12 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-white/50 text-xl leading-relaxed font-medium">
+                  {student.about_me}
+               </div>
+            </section>
+          )
+        }
+
+        if (section === 'certifications' && certifications?.length > 0) {
+          return (
+            <section key="certifications" id="certifications" className="py-24 px-8 max-w-6xl mx-auto space-y-12">
+              <div className="flex items-center gap-6">
+                <h2 className="text-4xl font-bold tracking-tight">Certifications</h2>
+                <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                 {certifications.map((cert, i) => (
+                    <div key={i} className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-primary/20 transition-all duration-500">
+                       <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">{cert.name}</h3>
+                       <p className="text-white/40 text-sm">{cert.issuer}</p>
+                       <div className="flex justify-between items-center mt-4">
+                          <span className="text-xs font-mono text-primary/40">{cert.date}</span>
+                          {cert.link && (
+                            <a href={cert.link} target="_blank" className="text-xs font-bold text-white/20 hover:text-white transition-colors">VERIFY</a>
+                          )}
+                       </div>
+                    </div>
+                 ))}
+              </div>
+            </section>
+          )
+        }
+
+        if (section === 'achievements' && student.achievements) {
+          return (
+            <section key="achievements" id="achievements" className="py-24 px-8 max-w-6xl mx-auto space-y-12">
+               <div className="flex items-center gap-6">
+                 <h2 className="text-4xl font-bold tracking-tight">Achievements</h2>
+                 <div className="h-px bg-gradient-to-r from-primary/50 to-transparent flex-1" />
+               </div>
+               <div className="p-12 rounded-[3rem] bg-gradient-to-br from-primary/10 to-transparent border border-white/5">
+                  <p className="text-4xl md:text-5xl font-bold tracking-tighter leading-tight italic text-white/80">
+                    &ldquo;{student.achievements}&rdquo;
+                  </p>
+               </div>
+            </section>
+          )
+        }
+
+        if (section === 'hobbies' && student.hobbies) {
+          return (
+            <section key="hobbies" id="hobbies" className="py-12 px-8 max-w-6xl mx-auto">
+               <div className="flex items-center gap-6 mb-8">
+                 <h2 className="text-xl font-bold tracking-widest text-white/20 uppercase">Hobbies</h2>
+                 <div className="h-px bg-white/5 flex-1" />
+               </div>
+               <p className="text-3xl font-bold text-white/70">{student.hobbies}</p>
+            </section>
+          )
+        }
+
+        if (section === 'interests' && student.interests) {
+          return (
+            <section key="interests" id="interests" className="py-12 px-8 max-w-6xl mx-auto">
+               <div className="flex items-center gap-6 mb-8">
+                 <h2 className="text-xl font-bold tracking-widest text-white/20 uppercase">Interests</h2>
+                 <div className="h-px bg-white/5 flex-1" />
+               </div>
+               <p className="text-3xl font-bold text-white/70">{student.interests}</p>
+            </section>
+          )
+        }
 
         if (section === 'experience' && experiences.length > 0) {
           return (

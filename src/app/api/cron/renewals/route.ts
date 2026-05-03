@@ -1,18 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { sendRenewalReminderEmail } from '@/lib/mail';
 
-export async function GET(request: Request) {
+import { headers } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
   // 1. Security Check (Optional: add a secret header)
-  const authHeader = request.headers.get('authorization');
+  const headersList = await headers();
+  const authHeader = headersList.get('authorization');
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const supabase = await createClient();
-
-    // 2. Find students whose subscription expires in the next 7 days
+    const supabase = createAdminClient();
     const today = new Date();
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(today.getDate() + 7);

@@ -44,6 +44,14 @@ const templates = [
     icon: <Briefcase className="text-slate-800" />,
     color: 'from-slate-200 to-slate-400',
     isPremium: true
+  },
+  {
+    id: 'futuristic-dark',
+    name: 'Futuristic Dark',
+    description: 'Next-gen design with floating glass elements and deep ambient lighting.',
+    icon: <Sparkles className="text-orange-400" />,
+    color: 'from-purple-900 to-black',
+    isPremium: true
   }
 ]
 

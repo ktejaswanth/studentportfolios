@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { GraduationCap, LayoutDashboard, User, LogOut, Shield, CreditCard, Menu, X } from 'lucide-react'
+import { GraduationCap, LayoutDashboard, User, LogOut, Shield, CreditCard, Menu, X, Layout, Share2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
@@ -18,10 +18,13 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
+    // Initial fetch
+    supabase.auth.getUser().then((res: any) => {
+      const user = res.data?.user
+      setUser(user || null)
       if (user) {
-        supabase.from('students').select('role').eq('user_id', user.id).limit(1).then(({ data }) => {
+        supabase.from('students').select('role').eq('user_id', user.id).limit(1).then((studentRes: any) => {
+          const data = studentRes.data
           if (data && data.length > 0) {
             setRole(data[0].role || 'student')
           } else {
@@ -31,10 +34,12 @@ export default function Navbar() {
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        supabase.from('students').select('role').eq('user_id', session.user.id).limit(1).then(({ data }) => {
+        supabase.from('students').select('role').eq('user_id', session.user.id).limit(1).then((studentRes: any) => {
+          const data = studentRes.data
           if (data && data.length > 0) {
             setRole(data[0].role || 'student')
           } else {
@@ -46,8 +51,10 @@ export default function Navbar() {
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, []) // Remove supabase.auth as it's now a singleton from createClient()
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()

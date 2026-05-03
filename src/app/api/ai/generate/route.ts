@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { createClient } from '@/lib/supabase/server';
+import { headers } from 'next/headers';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+export const dynamic = 'force-dynamic';
+
+
 
 export async function POST(req: Request) {
+  const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY || 'MISSING_KEY',
+  });
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

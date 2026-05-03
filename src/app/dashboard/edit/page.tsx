@@ -19,7 +19,12 @@ import {
   Upload,
   ArrowUp,
   ArrowDown,
-  Layout
+  Layout,
+  Award,
+  Heart,
+  Star,
+  Zap,
+  Info
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
@@ -28,6 +33,7 @@ type Experience = { company: string; role: string; duration: string; description
 type Project = { title: string; description: string; tech: string; link: string }
 type Education = { college: string; degree: string; year: string; cgpa: string }
 type Skill = { name: string; level: number }
+type Certification = { name: string; issuer: string; date: string; link: string }
 
 export default function EditPortfolio() {
   const router = useRouter()
@@ -49,13 +55,21 @@ export default function EditPortfolio() {
     theme_color: '#E53935',
     subscription_status: 'free',
     portfolio_password: '',
-    section_order: ['summary', 'experience', 'projects', 'education', 'skills']
+    about_me: '',
+    introduction: '',
+    hobbies: '',
+    interests: '',
+    achievements: '',
+    font_family: 'Outfit',
+    font_size: 'standard',
+    section_order: ['summary', 'experience', 'projects', 'education', 'skills', 'certifications', 'interests', 'hobbies']
   })
 
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [education, setEducation] = useState<Education[]>([])
   const [skills, setSkills] = useState<Skill[]>([])
+  const [certifications, setCertifications] = useState<Certification[]>([])
   const [aiLoading, setAiLoading] = useState(false)
 
   useEffect(() => {
@@ -64,7 +78,10 @@ export default function EditPortfolio() {
 
   const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return redirect('/login')
+    if (!user) {
+      router.push('/login')
+      return
+    }
 
     const { data: student } = await supabase
       .from('students')
@@ -87,21 +104,35 @@ export default function EditPortfolio() {
         theme_color: student.theme_color || '#E53935',
         subscription_status: student.subscription_status || 'free',
         portfolio_password: student.portfolio_password || '',
-        section_order: student.section_order || ['summary', 'experience', 'projects', 'education', 'skills']
+        about_me: student.about_me || '',
+        introduction: student.introduction || '',
+        hobbies: student.hobbies || '',
+        interests: student.interests || '',
+        achievements: student.achievements || '',
+        font_family: student.font_family || 'Outfit',
+        font_size: student.font_size || 'standard',
+        section_order: (() => {
+          const defaults = ['summary', 'experience', 'projects', 'education', 'skills', 'certifications', 'interests', 'hobbies', 'achievements'];
+          const existing = student.section_order || [];
+          const missing = defaults.filter(d => !existing.includes(d));
+          return [...existing, ...missing];
+        })()
       })
       
       // Fetch related data
-      const [exp, proj, edu, sk] = await Promise.all([
+      const [exp, proj, edu, sk, cert] = await Promise.all([
         supabase.from('experiences').select('*').eq('college_id', student.college_id).order('created_at'),
         supabase.from('projects').select('*').eq('college_id', student.college_id).order('created_at'),
         supabase.from('education').select('*').eq('college_id', student.college_id).order('created_at'),
-        supabase.from('skills').select('*').eq('college_id', student.college_id).order('created_at')
+        supabase.from('skills').select('*').eq('college_id', student.college_id).order('created_at'),
+        supabase.from('certifications').select('*').eq('college_id', student.college_id).order('created_at')
       ])
 
       setExperiences(exp.data || [])
       setProjects(proj.data || [])
       setEducation(edu.data || [])
       setSkills(sk.data || [])
+      setCertifications(cert.data || [])
     }
     setLoading(false)
   }
@@ -127,7 +158,8 @@ export default function EditPortfolio() {
         supabase.from('experiences').delete().eq('college_id', personal.college_id),
         supabase.from('projects').delete().eq('college_id', personal.college_id),
         supabase.from('education').delete().eq('college_id', personal.college_id),
-        supabase.from('skills').delete().eq('college_id', personal.college_id)
+        supabase.from('skills').delete().eq('college_id', personal.college_id),
+        supabase.from('certifications').delete().eq('college_id', personal.college_id)
       ])
 
       const insertPromises = []
@@ -135,6 +167,7 @@ export default function EditPortfolio() {
       if (projects.length) insertPromises.push(supabase.from('projects').insert(projects.map(p => ({ ...p, college_id: personal.college_id }))))
       if (education.length) insertPromises.push(supabase.from('education').insert(education.map(e => ({ ...e, college_id: personal.college_id }))))
       if (skills.length) insertPromises.push(supabase.from('skills').insert(skills.map(s => ({ ...s, college_id: personal.college_id }))))
+      if (certifications.length) insertPromises.push(supabase.from('certifications').insert(certifications.map(c => ({ ...c, college_id: personal.college_id }))))
 
       await Promise.all(insertPromises)
 
@@ -363,6 +396,33 @@ export default function EditPortfolio() {
          </div>
       </section>
 
+      {/* About Me & Introduction */}
+      <section id="about" className="space-y-6">
+         <div className="flex items-center justify-between">
+            <SectionTitle icon={<Info size={24} />} title="About Me & Introduction" />
+         </div>
+         <div className="grid md:grid-cols-1 gap-6 card-premium">
+            <div className="space-y-2">
+               <label className="text-sm font-medium">Short Introduction</label>
+               <input 
+                 className="input-field" 
+                 placeholder="A brief one-liner introduction..."
+                 value={personal.introduction || ''} 
+                 onChange={(e) => setPersonal({...personal, introduction: e.target.value})}
+               />
+            </div>
+            <div className="space-y-2">
+               <label className="text-sm font-medium">Detailed About Me</label>
+               <textarea 
+                 className="input-field min-h-[120px] resize-none" 
+                 placeholder="Tell your story, your background, and what makes you unique..."
+                 value={personal.about_me || ''} 
+                 onChange={(e) => setPersonal({...personal, about_me: e.target.value})}
+               />
+            </div>
+         </div>
+      </section>
+
       {/* Summary */}
       <section id="summary" className="space-y-6">
          <div className="flex items-center justify-between">
@@ -537,7 +597,7 @@ export default function EditPortfolio() {
       {/* Skills */}
       <section id="skills" className="space-y-6">
          <div className="flex items-center justify-between">
-           <SectionTitle icon={<Trophy size={24} />} title="Skills" />
+           <SectionTitle icon={<Trophy size={24} />} title="Skills & Tools" />
            <button 
              onClick={() => setSkills([...skills, { name: '', level: 80 }])}
              className="btn-secondary py-2 px-4 text-xs flex items-center gap-2"
@@ -571,6 +631,127 @@ export default function EditPortfolio() {
                  </div>
               </div>
             ))}
+         </div>
+      </section>
+
+      {/* Certifications */}
+      <section id="certifications" className="space-y-6">
+         <div className="flex items-center justify-between">
+            <SectionTitle icon={<Award size={24} />} title="Certifications" />
+            <button 
+              onClick={() => setCertifications([...certifications, { name: '', issuer: '', date: '', link: '' }])}
+              className="btn-secondary py-2 px-4 text-xs flex items-center gap-2"
+            >
+              <Plus size={14} /> Add Certification
+            </button>
+         </div>
+         <div className="space-y-4">
+            {certifications.map((cert, i) => (
+              <div key={i} className="card-premium relative grid md:grid-cols-4 gap-4 items-end">
+                 <div className="md:col-span-1 space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Name</label>
+                    <input className="input-field" value={cert.name} onChange={(e) => { const n = [...certifications]; n[i].name = e.target.value; setCertifications(n); }} />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Issuer</label>
+                    <input className="input-field" value={cert.issuer} onChange={(e) => { const n = [...certifications]; n[i].issuer = e.target.value; setCertifications(n); }} />
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Date</label>
+                    <input className="input-field" placeholder="Jan 2024" value={cert.date} onChange={(e) => { const n = [...certifications]; n[i].date = e.target.value; setCertifications(n); }} />
+                 </div>
+                 <div className="space-y-2 flex items-center gap-2">
+                    <div className="flex-1 space-y-2">
+                       <label className="text-xs font-medium text-muted-foreground">Link</label>
+                       <input className="input-field" value={cert.link} onChange={(e) => { const n = [...certifications]; n[i].link = e.target.value; setCertifications(n); }} />
+                    </div>
+                    <button 
+                      onClick={() => setCertifications(certifications.filter((_, idx) => idx !== i))}
+                      className="text-muted-foreground hover:text-destructive transition-colors mb-2"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                 </div>
+              </div>
+            ))}
+         </div>
+      </section>
+
+      {/* Achievements, Hobbies, Interests */}
+      <section id="extra" className="space-y-6">
+         <SectionTitle icon={<Star size={24} />} title="Achievements, Hobbies & Interests" />
+         <div className="grid md:grid-cols-1 gap-6 card-premium">
+            <div className="space-y-2">
+               <label className="text-sm font-medium flex items-center gap-2">
+                  <Trophy size={16} className="text-primary" /> Key Achievements
+               </label>
+               <textarea 
+                 className="input-field min-h-[80px] resize-none" 
+                 placeholder="Honors, awards, competition wins..."
+                 value={personal.achievements || ''} 
+                 onChange={(e) => setPersonal({...personal, achievements: e.target.value})}
+               />
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+               <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                     <Heart size={16} className="text-primary" /> Hobbies
+                  </label>
+                  <input 
+                    className="input-field" 
+                    placeholder="Photography, Traveling, Chess..."
+                    value={personal.hobbies || ''} 
+                    onChange={(e) => setPersonal({...personal, hobbies: e.target.value})}
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                     <Zap size={16} className="text-primary" /> Interests
+                  </label>
+                  <input 
+                    className="input-field" 
+                    placeholder="AI, Web3, Space, Music..."
+                    value={personal.interests || ''} 
+                    onChange={(e) => setPersonal({...personal, interests: e.target.value})}
+                  />
+               </div>
+            </div>
+ 
+            <div className="space-y-2">
+               <label className="text-sm font-medium flex items-center gap-2">
+                  Font Family
+                  {personal.subscription_status !== 'pro' && <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">Pro</span>}
+               </label>
+               <select 
+                 className={`input-field ${personal.subscription_status !== 'pro' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                 value={personal.font_family}
+                 onChange={(e) => personal.subscription_status === 'pro' && setPersonal({...personal, font_family: e.target.value})}
+                 disabled={personal.subscription_status !== 'pro'}
+               >
+                 <option value="Outfit">Outfit (Modern)</option>
+                 <option value="Inter">Inter (Clean)</option>
+                 <option value="Roboto">Roboto (Classic)</option>
+                 <option value="Montserrat">Montserrat (Geometric)</option>
+                 <option value="Playfair Display">Playfair Display (Elegant)</option>
+               </select>
+            </div>
+
+            <div className="space-y-2">
+               <label className="text-sm font-medium flex items-center gap-2">
+                  Font Size
+                  {personal.subscription_status !== 'pro' && <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">Pro</span>}
+               </label>
+               <select 
+                 className={`input-field ${personal.subscription_status !== 'pro' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                 value={personal.font_size}
+                 onChange={(e) => personal.subscription_status === 'pro' && setPersonal({...personal, font_size: e.target.value})}
+                 disabled={personal.subscription_status !== 'pro'}
+               >
+                 <option value="small">Small</option>
+                 <option value="standard">Standard</option>
+                 <option value="large">Large</option>
+               </select>
+            </div>
          </div>
       </section>
 
@@ -625,8 +806,3 @@ function EmptyState({ message }: { message: string }) {
   )
 }
 
-// Fixed redirect issue
-function redirect(path: string) {
-   if (typeof window !== 'undefined') window.location.href = path
-   return null
-}

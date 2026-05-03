@@ -1,8 +1,9 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 export async function sendApprovalEmail(to: string, name: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const { data, error } = await resend.emails.send({
       from: 'Portfolia <onboarding@resend.dev>',
@@ -46,6 +47,7 @@ export async function sendApprovalEmail(to: string, name: string) {
 }
 
 export async function sendRenewalReminderEmail(to: string, name: string, expiryDate: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const { data, error } = await resend.emails.send({
       from: 'Portfolia <onboarding@resend.dev>',
