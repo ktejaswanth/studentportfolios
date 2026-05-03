@@ -24,10 +24,6 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
   const fetchUsers = async () => {
     setLoading(true)
     const { data, error } = await supabase
@@ -39,6 +35,10 @@ export default function UserManagement() {
     else setUsers(data || [])
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
   const toggleAdmin = async (collegeId: string, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'student' : 'admin'

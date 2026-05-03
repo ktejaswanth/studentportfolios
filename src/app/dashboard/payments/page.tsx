@@ -21,10 +21,6 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
   const fetchData = async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -51,6 +47,10 @@ export default function PaymentsPage() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">

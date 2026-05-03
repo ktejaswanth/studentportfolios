@@ -25,10 +25,6 @@ export default function AdminPayments() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchPayments()
-  }, [])
-
   const fetchPayments = async () => {
     setLoading(true)
     const { data, error } = await supabase
@@ -47,6 +43,10 @@ export default function AdminPayments() {
     else setPayments(data || [])
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchPayments()
+  }, [])
 
   const handleApprove = async (payment: any) => {
     setProcessingId(payment.id)

@@ -9,13 +9,14 @@ import { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
   const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [role, setRole] = useState<string | null>(null)
+  const supabase = createClient()
+
   useEffect(() => {
     setIsMenuOpen(false)
   }, [pathname])
-  const supabase = createClient()
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     // Initial fetch

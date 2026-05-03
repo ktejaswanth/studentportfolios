@@ -72,10 +72,6 @@ export default function EditPortfolio() {
   const [certifications, setCertifications] = useState<Certification[]>([])
   const [aiLoading, setAiLoading] = useState(false)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
   const fetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -136,6 +132,10 @@ export default function EditPortfolio() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   const handleSave = async () => {
     setSaving(true)

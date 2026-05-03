@@ -64,10 +64,6 @@ export default function TemplatePicker() {
   const [studentId, setStudentId] = useState('')
   const [status, setStatus] = useState('free')
 
-  useEffect(() => {
-    fetchCurrentTemplate()
-  }, [])
-
   const fetchCurrentTemplate = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -85,6 +81,10 @@ export default function TemplatePicker() {
     }
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchCurrentTemplate()
+  }, [])
 
   const handleSelect = async (tpl: any) => {
     if (tpl.isPremium && status !== 'pro') {
