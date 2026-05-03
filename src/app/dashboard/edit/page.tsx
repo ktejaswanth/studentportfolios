@@ -56,6 +56,7 @@ export default function EditPortfolio() {
   const [projects, setProjects] = useState<Project[]>([])
   const [education, setEducation] = useState<Education[]>([])
   const [skills, setSkills] = useState<Skill[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -178,7 +179,7 @@ export default function EditPortfolio() {
     </div>
   )
 
-  const [aiLoading, setAiLoading] = useState(false)
+
   const generateWithAI = async (type: 'summary' | 'project', index?: number) => {
     if (!personal.role_title) {
        toast.error('Please enter a Headline / Role Type first'); return;
